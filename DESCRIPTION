@@ -10,13 +10,21 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
 Imports: 
-    mlr3,
+    mlr3 (>= 0.14.1),
     mlr3proba (>= 0.4.16),
-    mlr3pipelines,
-    mlr3extralearners,
+    mlr3pipelines (>= 0.4.2),
+    mlr3tuning (>= 0.16.0),
+    mlr3extralearners (>= 0.6.0),
+    mlr3misc (>= 0.11.0),
     paradox,
     R6,
-    parallelly
+    parallelly,
+    data.table,
+    tibble,
+    dplyr,
+    checkmate,
+    lgr,
+    survival
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
