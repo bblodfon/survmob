@@ -61,16 +61,14 @@ test_that('Tune CoxNet using Uno\'s C-index', {
   expect_number(p$score(msr('surv.brier')))
 })
 
-test_that('Tune XGBoost using RCLL', {
-  s = SurvLPS$new(ids = c('xgboost_cox_early', 'xgboost_aft_early'))
+test_that('Tune XGBoost (Cox, AFT) using RCLL measure + early stopping', {
+  s = SurvLPS$new(nthreads = 2, ids = c('xgboost_cox_early', 'xgboost_aft_early'))
   dt = s$lrn_tbl()
   xgb_learner = dt$learner[[1L]]
   xgb_learner_aft = dt$learner[[2L]]
   # IMPORTANT that this is set if using an *_early xgboost learner
-  expect_equal(xgb_learner$param_set$values$XGBoostCox.early_stopping_set,
-              'test')
-  expect_equal(xgb_learner_aft$param_set$values$XGBoostAFT.early_stopping_set,
-              'test')
+  expect_equal(xgb_learner$param_set$values$XGBoostCox.early_stopping_set, 'test')
+  expect_equal(xgb_learner_aft$param_set$values$XGBoostAFT.early_stopping_set, 'test')
 
   xgb_ps = dt$param_set[[1L]]
   expect_equal(xgb_ps$trafo(x =
@@ -81,33 +79,104 @@ test_that('Tune XGBoost using RCLL', {
   expect_true('XGBoostAFT.aft_loss_distribution' %in% xgb_aft_ps$ids())
   expect_true('XGBoostAFT.aft_loss_distribution_scale' %in% xgb_aft_ps$ids())
 
-  skip('XGBoost tuning can be very slow')
-  # set part of the dataset for validation (IMPORTANT - otherwise there are
-  # internal errors in the xgboost learners)
-  taskv2 = taskv$clone(deep = TRUE)
-  split = partition(taskv2, ratio = 0.8)
-  taskv2$set_row_roles(split$test, 'test')
+  # rewrite pss for speed (use less `nrounds`)
+  xgb_ps = paradox::ps(
+    XGBoostCox.nrounds = p_int(30, 150),
+    XGBoostCox.eta = p_dbl(1e-04, 0.3, logscale = TRUE),
+    XGBoostCox.max_depth = p_int(2, 8), # shallow trees
+    XGBoostCox.min_child_weight = p_dbl(1, 128, logscale = TRUE),
+    .extra_trafo = function(x, param_set) {
+      x$XGBoostCox.early_stopping_rounds =
+        as.integer(ceiling(0.1 * x$XGBoostCox.nrounds))
+      x
+    }
+  )
 
+  xgb_aft_ps = paradox::ps(
+    XGBoostAFT.nrounds = p_int(30, 150),
+    XGBoostAFT.eta = p_dbl(1e-04, 0.3, logscale = TRUE),
+    XGBoostAFT.max_depth = p_int(2, 8), # shallow trees
+    XGBoostAFT.min_child_weight = p_dbl(1, 128, logscale = TRUE),
+    XGBoostAFT.aft_loss_distribution = p_fct(c('normal', 'logistic', 'extreme')),
+    XGBoostAFT.aft_loss_distribution_scale = p_dbl(0.5, 2.0),
+    .extra_trafo = function(x, param_set) {
+      x$XGBoostAFT.early_stopping_rounds =
+        as.integer(ceiling(0.1 * x$XGBoostAFT.nrounds))
+      x
+    }
+  )
+
+  # Reason for skip:
+  # Too many `nthreads` can slow xgboost down when tuning with a small dataset?
+  #skip('XGBoost tuning can be very slow')
+
+  # XGBoostCox tuning with early stopping
   xgb_at = AutoTuner$new(
     learner = xgb_learner,
     resampling = rsmp('holdout'),
-    measure = msr('surv.brier'),
+    measure = msr('surv.rcll'),
     search_space = xgb_ps,
     terminator = trm('evals', n_evals = 5),
-    tuner = tnr('random_search')
+    tuner = tnr('random_search'),
+    callbacks = xgb_es_callback
   )
-  xgb_at$train(taskv2)
-  expect_true('surv.rcll' %in% colnames(xgb_at$archive$data))
-  expect_numeric(xgb_at$archive$data$surv.rcll)
+  xgb_at$train(taskv)
 
-  p = xgb_at$predict(taskv2)
+  # check tuning results
+  expect_true('surv.rcll' %in% colnames(xgb_at$archive$data))
+  # max_nrounds => max nrounds used in early stopping (best iteration)
+  expect_true('max_nrounds' %in% colnames(xgb_at$archive$data))
+  expect_numeric(xgb_at$archive$data$surv.rcll)
+  # check that the `max_rounds` of the best archive config was used as the
+  # normal `nrounds` of the final learner
+  expect_equal(xgb_at$learner$param_set$values$XGBoostCox.nrounds, xgb_at$archive$best()$max_nrounds)
+  expect_equal(xgb_at$learner$param_set$values$XGBoostCox.early_stopping_set, 'none')
+  expect_null(xgb_at$learner$param_set$values$XGBoostCox.early_stopping_rounds)
+
+  # check predictions
+  p = xgb_at$predict(taskv)
   expect_class(p, 'PredictionSurv')
   expect_numeric(p$crank)
   expect_numeric(p$lp)
   expect_class(p$distr, c('Distribution', 'Matdist'))
 
+  # tricky to get the importance scores!
   expect_numeric(xgb_at$learner$graph_model$pipeops$
       XGBoostCox$learner_model$importance())
+
+  expect_number(p$score(msr('surv.cindex')))
+  expect_number(p$score(msr('surv.rcll')))
+  expect_number(p$score(msr('surv.brier')))
+
+  # XGBoostAFT tuning with early stopping
+  xgb_aft_at = AutoTuner$new(
+    learner = xgb_learner_aft,
+    resampling = rsmp('holdout'),
+    measure = msr('surv.rcll'),
+    search_space = xgb_aft_ps,
+    terminator = trm('evals', n_evals = 5),
+    tuner = tnr('random_search'),
+    callbacks = xgb_es_callback
+  )
+  xgb_aft_at$train(taskv)
+
+  # check tuning results
+  expect_true('surv.rcll' %in% colnames(xgb_aft_at$archive$data))
+  # max_nrounds => max nrounds used in early stopping (best iteration)
+  expect_true('max_nrounds' %in% colnames(xgb_aft_at$archive$data))
+  expect_numeric(xgb_aft_at$archive$data$surv.rcll)
+  # check that the `max_rounds` of the best archive config was used as the
+  # normal `nrounds` of the final learner
+  expect_equal(xgb_aft_at$learner$param_set$values$XGBoostAFT.nrounds, xgb_aft_at$archive$best()$max_nrounds)
+  expect_equal(xgb_aft_at$learner$param_set$values$XGBoostAFT.early_stopping_set, 'none')
+  expect_null(xgb_aft_at$learner$param_set$values$XGBoostAFT.early_stopping_rounds)
+
+  # check predictions
+  p = xgb_aft_at$predict(taskv)
+  expect_class(p, 'PredictionSurv')
+  expect_numeric(p$crank)
+  expect_numeric(p$lp)
+  expect_class(p$distr, c('Distribution', 'Matdist'))
 
   expect_number(p$score(msr('surv.cindex')))
   expect_number(p$score(msr('surv.rcll')))
