@@ -2,6 +2,7 @@
 
 export(PipeOpSurvShuffle)
 export(SurvLPS)
+export(xgb_es_callback)
 importFrom(R6,R6Class)
 importFrom(data.table,data.table)
 importFrom(dplyr,filter)
