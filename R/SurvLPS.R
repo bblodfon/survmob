@@ -9,7 +9,7 @@
 #' library(mlr3proba)
 #' library(mlr3extralearners)
 #'
-#' s = SurvLPS$new(nthreads = 4)
+#' s = SurvLPS$new(nthreads_rsf = 4)
 #'
 #' # All available learner ids
 #' s$lrn_ids()
@@ -41,10 +41,13 @@
 #' @export
 SurvLPS = R6::R6Class('SurvLPS',
   public = list(
-    #' @field nthreads (`int(1)`)\cr
-    #' Number of cores to set in the survival learners that support implicit
-    #' parallelization
-    nthreads = NULL,
+    #' @field nthreads_rsf (`int(1)`)\cr
+    #' Number of cores to use in the random forest survival learners
+    nthreads_rsf = NULL,
+
+    #' @field nthreads_xgb (`int(1)`)\cr
+    #' Number of cores to use in the xgboost survival learners
+    nthreads_xgb = NULL,
 
     #' @description Creates a new instance of this [R6][R6::R6Class] class.
     #'
@@ -55,12 +58,21 @@ SurvLPS = R6::R6Class('SurvLPS',
     #' If not provided, the other methods of this class will return objects
     #' which will include all learners currently supported.
     #' See method `get_lrns_ids()` for available ids to request.
-    #' @param nthreads (`int(1)`)\cr
-    #' Number of cores to set in the survival learners that support implicit
-    #' parallelization (e.g. random survival forests and xgboost). Default
-    #' value: use all available cores.
-    initialize = function(ids      = NULL,
-                          nthreads = unname(parallelly::availableCores())) {
+    #' @param nthreads_rsf (`int(1)`)\cr
+    #' Number of cores to use in random survival forest learners (implicit
+    #' parallelization). Default value: use all available cores.
+    #'
+    #' @param nthreads_xgb (`int(1)`)\cr
+    #' Number of cores to use in xgboost survival learners (implicit
+    #' parallelization). Default value: use 1 core.
+    #'
+    #' @details If implicit parallelization is desired, the more `nthreads_rsf`
+    #' the better, but that is not the case with the xgboost learners.
+    #' With xgboost, adding more cores (especially when training small datasets)
+    #' might create performance issues, so test before you use too many `nthreads_xgb`!
+    initialize = function(ids          = NULL,
+                          nthreads_rsf = unname(parallelly::availableCores()),
+                          nthreads_xgb = 1) {
       lrn_ids = self$lrn_ids()
 
       if (!is.null(ids)) {
@@ -68,7 +80,8 @@ SurvLPS = R6::R6Class('SurvLPS',
       }
 
       private$.ids = lrn_ids
-      self$nthreads = nthreads
+      self$nthreads_rsf = nthreads_rsf
+      self$nthreads_xgb = nthreads_xgb
     },
 
     #' @description Survival Learners IDs
@@ -124,7 +137,8 @@ SurvLPS = R6::R6Class('SurvLPS',
     #' using the [mlr3proba::distrcompositor].
     lrns = function() {
       lrn_ids = private$.ids # user-specified, filtered at initialization
-      nthreads = self$nthreads
+      nthreads_rsf = self$nthreads_rsf
+      nthreads_xgb = self$nthreads_xgb
 
       # suppress warning when the fallback learner (kaplan-meier) and
       # a base learner have different main predict types
@@ -163,7 +177,7 @@ SurvLPS = R6::R6Class('SurvLPS',
               id = 'SurvivalForestCIndex',
               label = 'Random Forest (C-index splitrule)',
               fallback = lrn('surv.kaplan'),
-              num.threads = nthreads,
+              num.threads = nthreads_rsf,
               splitrule = 'C'  # Harrell's C-index
             )
           } else if (lrn_id == 'rsf_logrank') {
@@ -171,7 +185,7 @@ SurvLPS = R6::R6Class('SurvLPS',
               id = 'SurvivalForestLogRank',
               label = 'Random Forest (Logrank splitrule)',
               fallback = lrn('surv.kaplan'),
-              num.threads = nthreads,
+              num.threads = nthreads_rsf,
               splitrule = 'logrank'
             )
           } else if (lrn_id == 'rsf_maxstat') {
@@ -179,7 +193,7 @@ SurvLPS = R6::R6Class('SurvLPS',
               id = 'SurvivalForestMaxStat',
               label = 'Random Forest (Maximally selected rank statistics splitrule)',
               fallback = lrn('surv.kaplan'),
-              num.threads = nthreads,
+              num.threads = nthreads_rsf,
               splitrule = 'maxstat'
             )
           } else if (lrn_id == 'coxboost') { # CoxBoost
@@ -190,7 +204,7 @@ SurvLPS = R6::R6Class('SurvLPS',
             )
           } else if (grepl(pattern = 'xgboost_cox', x = lrn_id)) { # XGBoost Cox
             xgboost_cox = mlr3pipelines::ppl('distrcompositor',
-              learner = lrn('surv.xgboost', nthread = nthreads,
+              learner = lrn('surv.xgboost', nthread = nthreads_xgb,
                 booster = 'gbtree', fallback = lrn('surv.kaplan'),
                 objective = 'survival:cox', id = 'XGBoostCox'),
               estimator = 'kaplan',
@@ -208,7 +222,7 @@ SurvLPS = R6::R6Class('SurvLPS',
             xgboost_cox
           } else if (grepl(pattern = 'xgboost_aft', x = lrn_id)) {
             xgboost_aft = mlr3pipelines::ppl('distrcompositor',
-              learner = lrn('surv.xgboost', nthread = nthreads,
+              learner = lrn('surv.xgboost', nthread = nthreads_xgb,
                 booster = 'gbtree', fallback = lrn('surv.kaplan'),
                 objective = 'survival:aft', id = 'XGBoostAFT'),
               estimator = 'kaplan',

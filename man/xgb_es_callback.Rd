@@ -39,10 +39,12 @@ library(mlr3tuning)
 library(mlr3pipelines)
 library(mlr3extralearners)
 
+# task
 task = tsk('lung')
 poe = po('encode')
 task = poe$train(list(task))[[1L]]
 
+# xgboost graph learner with distr prediction + early stopping on the test set
 s = SurvLPS$new(nthreads = 2, ids = c('xgboost_cox_early'))
 dt = s$lrn_tbl()
 xgb_learner = dt$learner[[1L]]
@@ -56,8 +58,12 @@ xgb_at = AutoTuner$new(
   terminator = trm('evals', n_evals = 5),
   tuner = tnr('random_search'),
   callbacks = xgb_es_callback
+  # early stopping callback to get the proper nrounds at the end
 )
 xgb_at$train(task)
+
+as.data.table(xgb_at$archive)
+xgb_at$learner
 
 }
 \keyword{datasets}

@@ -13,7 +13,7 @@ library(paradox)
 library(mlr3proba)
 library(mlr3extralearners)
 
-s = SurvLPS$new(nthreads = 4)
+s = SurvLPS$new(nthreads_rsf = 4)
 
 # All available learner ids
 s$lrn_ids()
@@ -46,9 +46,11 @@ dt
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
-\item{\code{nthreads}}{(\code{int(1)})\cr
-Number of cores to set in the survival learners that support implicit
-parallelization}
+\item{\code{nthreads_rsf}}{(\code{int(1)})\cr
+Number of cores to use in the random forest survival learners}
+
+\item{\code{nthreads_xgb}}{(\code{int(1)})\cr
+Number of cores to use in the xgboost survival learners}
 }
 \if{html}{\out{</div>}}
 }
@@ -70,7 +72,11 @@ parallelization}
 \subsection{Method \code{new()}}{
 Creates a new instance of this \link[R6:R6Class]{R6} class.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SurvLPS$new(ids = NULL, nthreads = unname(parallelly::availableCores()))}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{SurvLPS$new(
+  ids = NULL,
+  nthreads_rsf = unname(parallelly::availableCores()),
+  nthreads_xgb = 1
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -84,13 +90,23 @@ If not provided, the other methods of this class will return objects
 which will include all learners currently supported.
 See method \code{get_lrns_ids()} for available ids to request.}
 
-\item{\code{nthreads}}{(\code{int(1)})\cr
-Number of cores to set in the survival learners that support implicit
-parallelization (e.g. random survival forests and xgboost). Default
-value: use all available cores.}
+\item{\code{nthreads_rsf}}{(\code{int(1)})\cr
+Number of cores to use in random survival forest learners (implicit
+parallelization). Default value: use all available cores.}
+
+\item{\code{nthreads_xgb}}{(\code{int(1)})\cr
+Number of cores to use in xgboost survival learners (implicit
+parallelization). Default value: use 1 core.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Details}{
+If implicit parallelization is desired, the more \code{nthreads_rsf}
+the better, but that is not the case with the xgboost learners.
+With xgboost, adding more cores (especially when training small datasets)
+might create performance issues, so test before you use too many \code{nthreads_xgb}!
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-SurvLPS-lrn_ids"></a>}}
