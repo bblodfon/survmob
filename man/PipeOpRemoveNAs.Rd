@@ -70,7 +70,7 @@ otherwise be set during construction.}
 \if{html}{\out{<a id="method-PipeOpRemoveNAs-ncolsNA"></a>}}
 \if{latex}{\out{\hypertarget{method-PipeOpRemoveNAs-ncolsNA}{}}}
 \subsection{Method \code{ncolsNA()}}{
-How many features (columns) have NAs?
+How many features (columns) have NAs (i.e. at least one)?
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PipeOpRemoveNAs$ncolsNA(task)}\if{html}{\out{</div>}}
 }

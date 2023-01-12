@@ -76,7 +76,7 @@ PipeOpRemoveNAs = R6Class('PipeOpRemoveNAs',
       )
     },
 
-    #' @description How many features (columns) have NAs?
+    #' @description How many features (columns) have NAs (i.e. at least one)?
     #' @param task [Task][mlr3::Task]
     ncolsNA = function(task) {
       sum(task$missings(cols = task$feature_names) > 0)
