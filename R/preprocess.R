@@ -47,7 +47,7 @@ PipeOpSurvShuffle = R6Class('PipeOpSurvShuffle',
 #' @description Removes features from a Survival Task for which the proportion
 #' of `NA` values are above a certain `cutoff` threshold
 #' @section Parameters:
-#' @param cutoff `logical(1)`\cr
+#' - `cutoff` :: `numeric(1)`\cr
 #' Features with more than `cutoff` percentage of NAs will be removed.
 #' Default value: 0.2.
 #' Higher `cutoff` values remove less features (less strict).
@@ -92,6 +92,69 @@ PipeOpRemoveNAs = R6Class('PipeOpRemoveNAs',
   )
 )
 
+#' @title PipeOpRemoveZeros
+#' @template param_pipelines
+#' @description
+#' Removes features from a Survival Task for which the proportion
+#' of zero values (`0`) are above a certain `cutoff` threshold.
+#' Useful when the task has read count expression data (e.g. mRNA data).
+#' @section Parameters:
+#' - `cutoff` :: `numeric(1)`\cr
+#' Features with more than `cutoff` percentage of zeros will be removed.
+#' Default value: 0.2.
+#' Higher `cutoff` values remove less features (less strict).
+#' @examples
+#' library(mlr3proba)
+#'
+#' df = data.frame(
+#'   time = c(1,2,3,4),
+#'   status = c(0,1,0,1),
+#'   X1 = c(999,0,0,0),
+#'   X2 = c(23,NA,0,0)
+#' )
+#'
+#' task = as_task_surv(x = df, id = 'test', time = 'time', event = 'status')
+#'
+#' poz = PipeOpRemoveZeros$new(param_vals = list(cutoff = 0.7))
+#' poz$train(list(task))[[1L]] # X1 removed, X2 remained
+#'
+#' @export
+PipeOpRemoveZeros = R6Class('PipeOpRemoveZeros',
+  inherit = PipeOpTaskPreproc,
+  public = list(
+    #' @description
+    #' Creates a new instance of this [R6][R6::R6Class] class.
+    initialize = function(id = 'remove_zeros', param_vals = list()) {
+      p = ps(cutoff = p_dbl(lower = 0, upper = 1, tags = 'required'))
+      p$values = list(cutoff = 0.2)
+      super$initialize(id = id, param_set = p, param_vals = param_vals,
+        can_subset_cols = FALSE, task_type = 'TaskSurv'
+      )
+    },
+
+    #' @description How many features (columns) have zeros (i.e. at least one)?
+    #' @param task [Task][mlr3::Task]
+    ncolsZero = function(task) {
+      nzeros = private$.get_nzeros(task)
+      sum(nzeros > 0)
+    }
+  ),
+  private = list(
+    # data.table of 1 row: for every column/feature of the provided task,
+    # the number of zeros
+    .get_nzeros = function(task) {
+      dt = task$data(cols = task$feature_names)
+      nzeros = dt[, lapply(.SD, function(X) { sum(X == 0, na.rm = T) })]
+      nzeros
+    },
+    .train_task = function(task) {
+      pvals = self$param_set$get_values()
+      per_nzeros = private$.get_nzeros(task)/task$nrow
+      task$select(cols = names(per_nzeros)[!per_nzeros > pvals$cutoff])
+    },
+    .predict_task = function(task) task # Do nothing during prediction
+  )
+)
 
 #' @title Minimize Backend of Task
 #'
