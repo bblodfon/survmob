@@ -45,7 +45,7 @@ poe = po('encode')
 task = poe$train(list(task))[[1L]]
 
 # xgboost graph learner with distr prediction + early stopping on the test set
-s = SurvLPS$new(nthreads = 2, ids = c('xgboost_cox_early'))
+s = SurvLPS$new(nthreads_xgb = 2, ids = c('xgboost_cox_early'))
 dt = s$lrn_tbl()
 xgb_learner = dt$learner[[1L]]
 xgb_ps = dt$param_set[[1L]]
