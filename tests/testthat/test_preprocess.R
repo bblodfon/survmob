@@ -57,7 +57,55 @@ test_that('PipeOpRemoveNAs works', {
 
   pona$param_set$values$cutoff = 0.2
   ttask4 = pona$train(list(ttask))[[1L]]
-  expect_equal(length(ttask4$feature_names), 0)
+  expect_equal(length(ttask4$feature_names), 0) # no features remain
+})
+
+test_that('PipeOpRemoveZeros works', {
+  # create survival task from read count test data
+  df = data.frame(
+    time = c(1,2,3,4),
+    status = c(0,1,0,1),
+    X1 = c(999,0,0,0),
+    X2 = c(23,NA,0,0),
+    X3 = c(NA,3,NA,0),
+    X4 = c(NA,1231,32,134),
+    X5 = c(0,0,0,0),
+    X6 = c(12,13,14,15)
+  )
+  task = as_task_surv(x = df, id = 'test', time = 'time', event = 'status')
+  expect_equal(length(task$feature_names), 6)
+
+  poz = PipeOpRemoveZeros$new()
+  expect_equal(poz$ncolsZero(task), 4) # 4 features with at least 1 zero
+  expect_equal(poz$param_set$values$cutoff, 0.2) # default cutoff value
+  nzeros = poz$.__enclos_env__$private$.get_nzeros(task) # zero counts
+  expect_equal(nzeros, data.table(X1 = 3, X2 = 2, X3 = 1, X4 = 0, X5 = 4, X6 = 0))
+  # nzeros/task$nrow # percentage of zeros per column
+
+  poz$param_set$values$cutoff = 1
+  task2 = poz$train(list(task))[[1L]]
+  expect_equal(length(task2$feature_names), 6) # no features removed
+
+  poz$param_set$values$cutoff = 0.75
+  task3 = poz$train(list(task))[[1L]]
+  expect_equal(length(task3$feature_names), 5) # 1 feature removed
+  expect_equal(task3$feature_names, c('X1', 'X2', 'X3', 'X4', 'X6'))
+
+  poz$param_set$values$cutoff = 0.5
+  task4 = poz$train(list(task))[[1L]]
+  expect_equal(length(task4$feature_names), 4) # 2 features removed
+  expect_equal(task4$feature_names, c('X2', 'X3', 'X4', 'X6'))
+
+  poz$param_set$values$cutoff = 0.1
+  task5 = poz$train(list(task))[[1L]]
+  expect_equal(length(task5$feature_names), 2) # 4 features removed
+  expect_equal(task5$feature_names, c('X4', 'X6'))
+
+  # remove all features with at least 1 zero
+  poz$param_set$values$cutoff = 0
+  task6 = poz$train(list(task))[[1]]
+  expect_equal(length(task6$feature_names), 2)
+  expect_equal(task6$feature_names, c('X4', 'X6'))
 })
 
 test_that('minimize_backend works', {
