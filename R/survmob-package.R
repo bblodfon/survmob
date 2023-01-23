@@ -22,3 +22,12 @@
 #' @importFrom R6 R6Class
 ## usethis namespace: end
 NULL
+
+register_mlr3 = function() {
+  x = utils::getFromNamespace('mlr_measures', ns = 'mlr3')
+  x$add('surv.oob_error', MeasureSurvOOBError)
+}
+
+.onLoad = function(libname, pkgname) {
+  register_mlr3()
+}

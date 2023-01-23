@@ -2,6 +2,7 @@ library(mlr3proba) # loads mlr3 as well
 library(mlr3tuning)
 library(mlr3pipelines)
 library(mlr3extralearners)
+library(mlr3misc)
 library(checkmate) # for more expect_*() functions
 
 # less logging
