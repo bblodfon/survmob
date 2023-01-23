@@ -1,7 +1,7 @@
 #' @title Survival Learners and Parameter Spaces
 #'
 #' @description Convenient [R6][R6::R6Class] class that offers methods to retrieve
-#' the survival learners that will be used for benchmarking as well as suggested
+#' survival learners (to be used for benchmarking) as well as suggested
 #' hyperparameter spaces for those learners.
 #'
 #' @examples
