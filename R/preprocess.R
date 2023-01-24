@@ -50,8 +50,8 @@ PipeOpSurvShuffle = R6Class('PipeOpSurvShuffle',
 
 #' @title PipeOpRemoveNAs
 #' @template param_pipelines
-#' @description Removes features from a Survival Task for which the proportion
-#' of `NA` values are above a certain `cutoff` threshold
+#' @description Removes features from a Task for which the proportion
+#' of `NA` values are above a certain `cutoff` threshold.
 #' @section Parameters:
 #' - `cutoff` :: `numeric(1)`\cr
 #' Features with more than `cutoff` percentage of NAs will be removed.
@@ -88,7 +88,7 @@ PipeOpRemoveNAs = R6Class('PipeOpRemoveNAs',
       p = ps(cutoff = p_dbl(lower = 0, upper = 1, tags = 'required'))
       p$values = list(cutoff = 0.2)
       super$initialize(id = id, param_set = p, param_vals = param_vals,
-        can_subset_cols = FALSE, task_type = 'TaskSurv'
+        can_subset_cols = FALSE, task_type = 'Task'
       )
     },
 
@@ -111,14 +111,13 @@ PipeOpRemoveNAs = R6Class('PipeOpRemoveNAs',
 #' @title PipeOpRemoveZeros
 #' @template param_pipelines
 #' @description
-#' Removes features from a Survival Task for which the proportion
+#' Removes features from a Task for which the proportion
 #' of zero values (`0`) are above a certain `cutoff` threshold.
 #' Useful when the task has read count expression data (e.g. mRNA data).
 #' @section Parameters:
 #' - `cutoff` :: `numeric(1)`\cr
 #' Features with more than `cutoff` percentage of zeros will be removed.
 #' Default value: 0.2.
-#' Higher `cutoff` values remove less features (less strict).
 #' @section Initialization:
 #' ```
 #' PipeOpRemoveZeros$new()
@@ -154,7 +153,7 @@ PipeOpRemoveZeros = R6Class('PipeOpRemoveZeros',
       p = ps(cutoff = p_dbl(lower = 0, upper = 1, tags = 'required'))
       p$values = list(cutoff = 0.2)
       super$initialize(id = id, param_set = p, param_vals = param_vals,
-        can_subset_cols = FALSE, task_type = 'TaskSurv'
+        can_subset_cols = FALSE, task_type = 'Task'
       )
     },
 

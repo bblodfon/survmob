@@ -4,8 +4,8 @@
 \alias{PipeOpRemoveNAs}
 \title{PipeOpRemoveNAs}
 \description{
-Removes features from a Survival Task for which the proportion
-of \code{NA} values are above a certain \code{cutoff} threshold
+Removes features from a Task for which the proportion
+of \code{NA} values are above a certain \code{cutoff} threshold.
 }
 \section{Parameters}{
 

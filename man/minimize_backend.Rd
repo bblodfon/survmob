@@ -2,7 +2,7 @@
 % Please edit documentation in R/preprocess.R
 \name{minimize_backend}
 \alias{minimize_backend}
-\title{Minimize Backend of Task}
+\title{Minimize Backend of Survival Task}
 \usage{
 minimize_backend(task)
 }

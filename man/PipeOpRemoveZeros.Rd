@@ -4,7 +4,7 @@
 \alias{PipeOpRemoveZeros}
 \title{PipeOpRemoveZeros}
 \description{
-Removes features from a Survival Task for which the proportion
+Removes features from a Task for which the proportion
 of zero values (\code{0}) are above a certain \code{cutoff} threshold.
 Useful when the task has read count expression data (e.g. mRNA data).
 }
@@ -14,7 +14,6 @@ Useful when the task has read count expression data (e.g. mRNA data).
 \item \code{cutoff} :: \code{numeric(1)}\cr
 Features with more than \code{cutoff} percentage of zeros will be removed.
 Default value: 0.2.
-Higher \code{cutoff} values remove less features (less strict).
 }
 }
 
