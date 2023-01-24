@@ -56,7 +56,6 @@ PipeOpSurvShuffle = R6Class('PipeOpSurvShuffle',
 #' - `cutoff` :: `numeric(1)`\cr
 #' Features with more than `cutoff` percentage of NAs will be removed.
 #' Default value: 0.2.
-#' Higher `cutoff` values remove less features (less strict).
 #' @section Initialization:
 #' ```
 #' PipeOpRemoveNAs$new()
@@ -102,7 +101,11 @@ PipeOpRemoveNAs = R6Class('PipeOpRemoveNAs',
     .train_task = function(task) {
       pvals = self$param_set$get_values()
       per_NA = task$missings(cols = task$feature_names)/task$nrow
-      task$select(cols = names(per_NA)[!per_NA > pvals$cutoff])
+      lgl_vec = per_NA > pvals$cutoff
+      # keep track of number of columns/features removed
+      self$state = list(removed_column_num = sum(lgl_vec))
+      # return task
+      task$select(cols = names(per_NA)[!lgl_vec])
     },
     .predict_task = function(task) task # Do nothing during prediction
   )
@@ -174,8 +177,11 @@ PipeOpRemoveZeros = R6Class('PipeOpRemoveZeros',
     },
     .train_task = function(task) {
       pvals = self$param_set$get_values()
-      per_nzeros = private$.get_nzeros(task)/task$nrow
-      task$select(cols = names(per_nzeros)[!per_nzeros > pvals$cutoff])
+      per_zeros = private$.get_nzeros(task)/task$nrow
+      lgl_vec = per_zeros > pvals$cutoff
+      # keep track of number of columns/features removed
+      self$state = list(removed_column_num = sum(lgl_vec))
+      task$select(cols = names(per_zeros)[!lgl_vec])
     },
     .predict_task = function(task) task # Do nothing during prediction
   )

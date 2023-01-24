@@ -20,16 +20,19 @@ test_that('PipeOpRemoveNAs works', {
   expect_equal(pona$param_set$values$cutoff, 0.2) # default cutoff value
 
   task2 = pona$train(list(task))[[1L]]
-  expect_equal(length(task2$feature_names), 7) # meal.cal removed
+  expect_equal(length(task2$feature_names), 7)
+  expect_equal(pona$state$removed_column_num, 1) # meal.cal removed
 
   pona$param_set$values$cutoff = 0.05
   task3 = pona$train(list(task))[[1L]]
-  expect_equal(length(task3$feature_names), 6) # meal_cal + wt_loss removed
+  expect_equal(length(task3$feature_names), 6)
+  expect_equal(pona$state$removed_column_num, 2) # meal_cal + wt_loss removed
 
   # remove all features with at least 1 NA
   pona$param_set$values$cutoff = 0
   task4 = pona$train(list(task))[[1]]
   expect_equal(length(task4$feature_names), 2)
+  expect_equal(pona$state$removed_column_num, 6)
 
   # create another task to test what happens when all features are removed
   df = data.frame(
@@ -54,10 +57,12 @@ test_that('PipeOpRemoveNAs works', {
   pona$param_set$values$cutoff = 0.25
   ttask3 = pona$train(list(ttask))[[1L]]
   expect_equal(length(ttask3$feature_names), 1)
+  expect_equal(pona$state$removed_column_num, 3)
 
   pona$param_set$values$cutoff = 0.2
   ttask4 = pona$train(list(ttask))[[1L]]
   expect_equal(length(ttask4$feature_names), 0) # no features remain
+  expect_equal(pona$state$removed_column_num, 4) # all features removed
 })
 
 test_that('PipeOpRemoveZeros works', {
@@ -84,27 +89,32 @@ test_that('PipeOpRemoveZeros works', {
 
   poz$param_set$values$cutoff = 1
   task2 = poz$train(list(task))[[1L]]
-  expect_equal(length(task2$feature_names), 6) # no features removed
+  expect_equal(length(task2$feature_names), 6)
+  expect_equal(poz$state$removed_column_num, 0) # no features removed
 
   poz$param_set$values$cutoff = 0.75
   task3 = poz$train(list(task))[[1L]]
-  expect_equal(length(task3$feature_names), 5) # 1 feature removed
+  expect_equal(length(task3$feature_names), 5)
+  expect_equal(poz$state$removed_column_num, 1) # 1 feature removed
   expect_equal(task3$feature_names, c('X1', 'X2', 'X3', 'X4', 'X6'))
 
   poz$param_set$values$cutoff = 0.5
   task4 = poz$train(list(task))[[1L]]
-  expect_equal(length(task4$feature_names), 4) # 2 features removed
+  expect_equal(length(task4$feature_names), 4)
+  expect_equal(poz$state$removed_column_num, 2) # 2 features removed
   expect_equal(task4$feature_names, c('X2', 'X3', 'X4', 'X6'))
 
   poz$param_set$values$cutoff = 0.1
   task5 = poz$train(list(task))[[1L]]
-  expect_equal(length(task5$feature_names), 2) # 4 features removed
+  expect_equal(length(task5$feature_names), 2)
+  expect_equal(poz$state$removed_column_num, 4) # 4 features removed
   expect_equal(task5$feature_names, c('X4', 'X6'))
 
   # remove all features with at least 1 zero
   poz$param_set$values$cutoff = 0
   task6 = poz$train(list(task))[[1]]
   expect_equal(length(task6$feature_names), 2)
+  expect_equal(poz$state$removed_column_num, 4)
   expect_equal(task6$feature_names, c('X4', 'X6'))
 })
 
