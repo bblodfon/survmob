@@ -4,13 +4,19 @@
 #' @section Parameters:
 #' - `replace` :: `logical(1)` \cr
 #' Whether sampling should be done with replacement or not. Default: FALSE
+#' @section Initialization:
+#' ```
+#' PipeOpSurvShuffle$new()
+#' poss = po('survshuffle')
+#' ```
 #' @examples
 #' library(mlr3)
 #' library(mlr3proba)
+#' library(mlr3pipelines)
 #'
 #' task = tsk('lung')
 #' task$head(3)
-#' poss = PipeOpSurvShuffle$new()
+#' poss = PipeOpSurvShuffle$new() # poss = po('survshuffle')
 #' task_shuffled = poss$train(list(task))[[1L]]
 #' task_shuffled$head(3)
 #' @export
@@ -51,8 +57,14 @@ PipeOpSurvShuffle = R6Class('PipeOpSurvShuffle',
 #' Features with more than `cutoff` percentage of NAs will be removed.
 #' Default value: 0.2.
 #' Higher `cutoff` values remove less features (less strict).
+#' @section Initialization:
+#' ```
+#' PipeOpRemoveNAs$new()
+#' pona = po('removenas')
+#' ```
 #' @examples
 #' library(mlr3proba)
+#' library(mlr3pipelines)
 #'
 #' task = tsk('lung')
 #' task
@@ -61,6 +73,10 @@ PipeOpSurvShuffle = R6Class('PipeOpSurvShuffle',
 #'
 #' pona$param_set$values$cutoff = 0 # remove every feature with at least 1 NA
 #' pona$train(list(task))[[1L]]
+#'
+#' # another way to do the same
+#' pona = po('removenas', cutoff = 0.1)
+#' pona$train(list(task))[[1L]] # meal.cal removed
 #'
 #' @export
 PipeOpRemoveNAs = R6Class('PipeOpRemoveNAs',
@@ -103,8 +119,14 @@ PipeOpRemoveNAs = R6Class('PipeOpRemoveNAs',
 #' Features with more than `cutoff` percentage of zeros will be removed.
 #' Default value: 0.2.
 #' Higher `cutoff` values remove less features (less strict).
+#' @section Initialization:
+#' ```
+#' PipeOpRemoveZeros$new()
+#' porz = po('removezeros')
+#' ```
 #' @examples
 #' library(mlr3proba)
+#' library(mlr3pipelines)
 #'
 #' df = data.frame(
 #'   time = c(1,2,3,4),
@@ -115,8 +137,12 @@ PipeOpRemoveNAs = R6Class('PipeOpRemoveNAs',
 #'
 #' task = as_task_surv(x = df, id = 'test', time = 'time', event = 'status')
 #'
-#' poz = PipeOpRemoveZeros$new(param_vals = list(cutoff = 0.7))
-#' poz$train(list(task))[[1L]] # X1 removed, X2 remained
+#' porz = PipeOpRemoveZeros$new(param_vals = list(cutoff = 0.7))
+#' porz$train(list(task))[[1L]] # X1 removed, X2 remained
+#'
+#' # another way to do the same
+#' porz = po('removezeros', cutoff = 0.7)
+#' porz$train(list(task))[[1L]] # X1 removed, X2 remained
 #'
 #' @export
 PipeOpRemoveZeros = R6Class('PipeOpRemoveZeros',

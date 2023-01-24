@@ -14,13 +14,22 @@ Whether sampling should be done with replacement or not. Default: FALSE
 }
 }
 
+\section{Initialization}{
+
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{PipeOpSurvShuffle$new()
+poss = po('survshuffle')
+}\if{html}{\out{</div>}}
+}
+
 \examples{
 library(mlr3)
 library(mlr3proba)
+library(mlr3pipelines)
 
 task = tsk('lung')
 task$head(3)
-poss = PipeOpSurvShuffle$new()
+poss = PipeOpSurvShuffle$new() # poss = po('survshuffle')
 task_shuffled = poss$train(list(task))[[1L]]
 task_shuffled$head(3)
 }

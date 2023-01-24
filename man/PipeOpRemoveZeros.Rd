@@ -18,8 +18,17 @@ Higher \code{cutoff} values remove less features (less strict).
 }
 }
 
+\section{Initialization}{
+
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{PipeOpRemoveZeros$new()
+porz = po('removezeros')
+}\if{html}{\out{</div>}}
+}
+
 \examples{
 library(mlr3proba)
+library(mlr3pipelines)
 
 df = data.frame(
   time = c(1,2,3,4),
@@ -30,8 +39,12 @@ df = data.frame(
 
 task = as_task_surv(x = df, id = 'test', time = 'time', event = 'status')
 
-poz = PipeOpRemoveZeros$new(param_vals = list(cutoff = 0.7))
-poz$train(list(task))[[1L]] # X1 removed, X2 remained
+porz = PipeOpRemoveZeros$new(param_vals = list(cutoff = 0.7))
+porz$train(list(task))[[1L]] # X1 removed, X2 remained
+
+# another way to do the same
+porz = po('removezeros', cutoff = 0.7)
+porz$train(list(task))[[1L]] # X1 removed, X2 remained
 
 }
 \section{Super classes}{

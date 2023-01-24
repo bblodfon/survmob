@@ -17,8 +17,17 @@ Higher \code{cutoff} values remove less features (less strict).
 }
 }
 
+\section{Initialization}{
+
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{PipeOpRemoveNAs$new()
+pona = po('removenas')
+}\if{html}{\out{</div>}}
+}
+
 \examples{
 library(mlr3proba)
+library(mlr3pipelines)
 
 task = tsk('lung')
 task
@@ -27,6 +36,10 @@ pona$train(list(task))[[1L]] # meal.cal removed
 
 pona$param_set$values$cutoff = 0 # remove every feature with at least 1 NA
 pona$train(list(task))[[1L]]
+
+# another way to do the same
+pona = po('removenas', cutoff = 0.1)
+pona$train(list(task))[[1L]] # meal.cal removed
 
 }
 \section{Super classes}{

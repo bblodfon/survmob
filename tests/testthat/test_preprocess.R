@@ -108,6 +108,17 @@ test_that('PipeOpRemoveZeros works', {
   expect_equal(task6$feature_names, c('X4', 'X6'))
 })
 
+test_that('initialization with po (PipeOp) shorthand constructor works', {
+  poss = po('survshuffle')
+  expect_equal(poss$param_set$values$replace, FALSE)
+
+  pona = po('removenas')
+  expect_equal(pona$param_set$values$cutoff, 0.2)
+
+  porz = po('removezeros')
+  expect_equal(porz$param_set$values$cutoff, 0.2)
+})
+
 test_that('minimize_backend works', {
   task = tsk('lung')
 

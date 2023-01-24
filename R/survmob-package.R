@@ -26,6 +26,11 @@ NULL
 register_mlr3 = function() {
   x = utils::getFromNamespace('mlr_measures', ns = 'mlr3')
   x$add('surv.oob_error', MeasureSurvOOBError)
+
+  x = utils::getFromNamespace('mlr_pipeops', ns = 'mlr3pipelines')
+  x$add('survshuffle', PipeOpSurvShuffle)
+  x$add('removenas', PipeOpRemoveNAs)
+  x$add('removezeros', PipeOpRemoveZeros)
 }
 
 .onLoad = function(libname, pkgname) {
