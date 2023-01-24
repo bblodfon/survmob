@@ -31,6 +31,7 @@ register_mlr3 = function() {
   x$add('survshuffle', PipeOpSurvShuffle)
   x$add('removenas', PipeOpRemoveNAs)
   x$add('removezeros', PipeOpRemoveZeros)
+  x$add('logtransform', PipeOpLogTransform)
 }
 
 .onLoad = function(libname, pkgname) {

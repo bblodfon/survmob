@@ -181,7 +181,84 @@ PipeOpRemoveZeros = R6Class('PipeOpRemoveZeros',
   )
 )
 
-#' @title Minimize Backend of Task
+#' @title PipeOpLogTransform
+#' @template param_pipelines
+#' @description
+#' Applies the [log()][base::log] function to every numeric feature of a Task.
+#' NA's are ignored.
+#' @section Parameters:
+#' - `base` :: `numeric(1)`\cr
+#' The base of the logarithm. Default is to use a base of 2.
+#' - `offset` :: `numeric(1)`\cr
+#' Offset value to add to each (numeric) feature.
+#' Since this is primarily intended to be used with count mRNA data where there
+#' are many zeros, default `offset` is 1 (to get a log value of 0).
+#' @section Initialization:
+#' ```
+#' PipeOpLogTransform$new()
+#' polog = po('logtransform')
+#' ```
+#' @examples
+#' library(mlr3proba)
+#' library(mlr3pipelines)
+#'
+#' df = data.frame(
+#'   time = c(1,2,3,4),
+#'   status = c(0,1,0,1),
+#'   X1 = c(999,0,0,0),
+#'   X2 = c(23,NA,0,0),
+#'   X3 = c('a','b','c','d')
+#' )
+#'
+#' task = as_task_surv(x = df, id = 'test', time = 'time', event = 'status')
+#'
+#' polog = po('logtransform')
+#' polog$train(list(task))[[1L]] # X3 didn't change, X1 and X2 got log-transformed
+#'
+#' @export
+PipeOpLogTransform = R6Class('PipeOpLogTransform',
+  inherit = PipeOpTaskPreproc,
+  public = list(
+    #' @description
+    #' Creates a new instance of this [R6][R6::R6Class] class.
+    initialize = function(id = 'log_transform', param_vals = list()) {
+      p = ps(
+        base = p_dbl(lower = 0, upper = Inf, tags = 'required'),
+        offset = p_dbl(tags = 'required')
+      )
+      p$values = list(base = 2, offset = 1)
+      super$initialize(id = id, param_set = p, param_vals = param_vals,
+        can_subset_cols = FALSE, task_type = 'Task'
+      )
+    }
+  ),
+  private = list(
+    .train_task = function(task) {
+      # original features
+      features = task$col_roles$feature
+
+      # only operate on numeric columns
+      numeric_cols = task$feature_types[type %in% c('integer', 'numeric'), id]
+      if (!length(numeric_cols)) return(task)
+      dt = task$data(cols = numeric_cols)
+
+      # get the hyperparameters and do the log-transform
+      pvals = self$param_set$get_values()
+      dt_trans = log(dt + pvals$offset, base = pvals$base)
+
+      # $cbind() overwrites old task columns
+      task$select(setdiff(task$feature_names, numeric_cols))$cbind(dt_trans)
+      # keep the order the same
+      task$col_roles$feature = features
+
+      task
+    },
+
+    .predict_task = function(dt, levels) dt # Do nothing during prediction
+  )
+)
+
+#' @title Minimize Backend of Survival Task
 #'
 #' @description Use this function when the backend of a task hasn't changed
 #' after a lot of preprocessing, making the it to heavy to use in further

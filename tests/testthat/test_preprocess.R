@@ -108,6 +108,71 @@ test_that('PipeOpRemoveZeros works', {
   expect_equal(task6$feature_names, c('X4', 'X6'))
 })
 
+test_that('PipeOpLogTransform works', {
+  # create survival task from read count test data
+  df = data.frame(
+    time = c(1,2,3,4),
+    status = c(0,1,0,1),
+    X1 = c(999,0,0,0),
+    X2 = c('i',NA,'r','t'), # char column
+    X3 = c(NA,3,NA,0),
+    X4 = c(NA,1231,32,134),
+    X5 = c(0,0,0,0),
+    X6 = LETTERS[1:4] # char column
+  )
+  task = as_task_surv(x = df, id = 'test', time = 'time', event = 'status')
+  expect_equal(length(task$feature_names), 6)
+
+  polog = PipeOpLogTransform$new()
+  # default hyperparameters are set correctly
+  expect_equal(polog$param_set$values$base, 2)
+  expect_equal(polog$param_set$values$offset, 1)
+
+  task2 = polog$train(list(task))[[1L]]
+  # non-numeric columns didn't change
+  expect_equal(
+    task$data (cols = c('time', 'status', 'X2', 'X6')),
+    task2$data(cols = c('time', 'status', 'X2', 'X6'))
+  )
+
+  # order of features didn't change
+  expect_equal(task2$feature_names, task$feature_names)
+
+  # log(x+1, 2) was applied correctly
+  expect_equal(
+    task2$data(cols = 'X1', rows = 1)$X1, # 999
+    log(task$data(cols = 'X1', rows = 1)$X1 + 1, 2)
+  )
+  expect_equal(
+    task2$data(cols = 'X4', rows = 3)$X4, # 32
+    log(task$data(cols = 'X4', rows = 3)$X4 + 1, 2)
+  )
+  expect_equal(
+    task2$data(cols = 'X5')$X5, # all zeros
+    log(task$data(cols = 'X5')$X5 + 1, 2)
+  )
+
+  # different base and offset => log(x+2, exp(1))
+  polog2 = PipeOpLogTransform$new(param_vals = list(base = exp(1), offset = 2))
+  task3 = polog2$train(list(task))[[1L]]
+
+  expect_equal(
+    task3$data(cols = 'X1', rows = 1)$X1, # 999
+    log(task$data(cols = 'X1', rows = 1)$X1 + 2, exp(1))
+  )
+  expect_equal(
+    task3$data(cols = 'X4', rows = 3)$X4, # 32
+    log(task$data(cols = 'X4', rows = 3)$X4 + 2, exp(1))
+  )
+  expect_equal(
+    task3$data(cols = 'X5')$X5, # all zeros
+    log(task$data(cols = 'X5')$X5 + 2, exp(1))
+  )
+
+  # order the same
+  expect_equal(task3$col_roles$feature, task$col_roles$feature)
+})
+
 test_that('initialization with po (PipeOp) shorthand constructor works', {
   poss = po('survshuffle')
   expect_equal(poss$param_set$values$replace, FALSE)
@@ -117,6 +182,10 @@ test_that('initialization with po (PipeOp) shorthand constructor works', {
 
   porz = po('removezeros')
   expect_equal(porz$param_set$values$cutoff, 0.2)
+
+  polog = po('logtransform', base = exp(1), offset = 1)
+  expect_equal(polog$param_set$values$base, exp(1))
+  expect_equal(polog$param_set$values$offset, 1)
 })
 
 test_that('minimize_backend works', {
