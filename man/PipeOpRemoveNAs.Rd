@@ -13,7 +13,6 @@ of \code{NA} values are above a certain \code{cutoff} threshold.
 \item \code{cutoff} :: \code{numeric(1)}\cr
 Features with more than \code{cutoff} percentage of NAs will be removed.
 Default value: 0.2.
-Higher \code{cutoff} values remove less features (less strict).
 }
 }
 
