@@ -88,7 +88,7 @@ Survival learner ids for which to request the corresponding
 hyperparameter spaces.
 If not provided, the other methods of this class will return objects
 which will include all learners currently supported.
-See method \code{get_lrns_ids()} for available ids to request.}
+See method \code{lrn_ids()} for available ids to request.}
 
 \item{\code{nthreads_rsf}}{(\code{int(1)})\cr
 Number of cores to use in random survival forest learners (implicit

@@ -57,7 +57,7 @@ SurvLPS = R6::R6Class('SurvLPS',
     #' hyperparameter spaces.
     #' If not provided, the other methods of this class will return objects
     #' which will include all learners currently supported.
-    #' See method `get_lrns_ids()` for available ids to request.
+    #' See method `lrn_ids()` for available ids to request.
     #' @param nthreads_rsf (`int(1)`)\cr
     #' Number of cores to use in random survival forest learners (implicit
     #' parallelization). Default value: use all available cores.
