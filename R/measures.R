@@ -1,7 +1,7 @@
 #' @title Measures for Benchmarking Survival Models
 #'
 #' @description A convenient function that returns a table with measures that
-#' can be used for benchmarking survival learners
+#' can be used for benchmarking survival learners.
 #'
 #' @details The following measures are provided via [mlr3proba]:
 #' - Discrimination measures (ranking `crank` prediction type)
@@ -9,8 +9,15 @@
 #'    - [Uno's C-index][mlr3proba::MeasureSurvCindex] (estimates censoring distribution using KM)
 #' - Calibration measures (survival `distr` prediction type)
 #'    - [Integrated Brier Score][mlr3proba::MeasureSurvGraf] (with *proper = TRUE, method = 2*, estimates KM censoring distribution)
-#'    - [Right-Censored Log-Loss][mlr3proba::MeasureSurvRCLL] (strictly proper calibration score)
+#'    - [Right-Censored Log-Loss][mlr3proba::MeasureSurvRCLL] (proper calibration score)
 #'    - [D-Calibration][mlr3proba::MeasureSurvDCalibration] (with *B = 10, chisq = FALSE*, returning the measure and not the p-value)
+#'
+#'  Any of the above measures **can** be used for model *evaluation* (but depends
+#'  on several other factors if they **should** be used, e.g. censoring
+#'  distribution, dataset size, proportion of events in the test set, etc.).
+#'  For model *optimization/tuning*, we suggest the Right-Censored Log-Loss
+#'  for survival predictions and Uno's C-index for ranking predictions
+#'  (e.g. linear predictors).
 #'
 #' @return a [data.table][data.table::data.table] with the suggested survival
 #' measures used for benchmarking purposes
