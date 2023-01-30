@@ -11,11 +11,11 @@ test_that('bench_msrs returns the expected measures', {
   expect_equal(ibrier$param_set$values$proper, TRUE)
 })
 
-test_that('MeasureSurvOOBError', {
+test_that('oob_error with ranger() works', {
   learner = lrn('surv.ranger')
   learner$train(taskv)
   pred = learner$predict(taskv)
-  measure = msr('surv.oob_error')
+  measure = msr('oob_error')
   expect_equal(unname(pred$score(measure, learner = learner)),
                learner$oob_error())
 })
