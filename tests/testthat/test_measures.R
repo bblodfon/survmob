@@ -9,6 +9,10 @@ test_that('bench_msrs returns the expected measures', {
   expect_equal(ibrier$param_set$values$integrated, TRUE)
   expect_equal(ibrier$param_set$values$method, 2)
   expect_equal(ibrier$param_set$values$proper, TRUE)
+
+  # check labels
+  msr_labels = sapply(ms$measure, function(measure) measure$label)
+  expect_equal(msr_labels, c('HarrellC', 'UnoC', 'IBrier', 'RCLL', 'Dcal'))
 })
 
 test_that('oob_error with ranger() works', {

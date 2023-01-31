@@ -44,9 +44,11 @@ bench_msrs = function() {
 
   # Ring-Censored Log-Loss
   rcll = msr('surv.rcll')
+  rcll$label = 'RCLL'
 
   # D-calibration
   dcal = msr('surv.dcalib', B = 10, chisq = FALSE)
+  dcal$label = 'Dcal'
 
   data.table(
     id      = c('harrell_c', 'uno_c', 'ibrier', 'rcll', 'dcal'),
