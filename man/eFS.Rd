@@ -51,8 +51,11 @@ efs$run(task)
 
 # result tibble
 res = efs$result
-
 res
+
+# get frequency selection stats (per learner and consensus)
+efs$fs_stats()
+
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
@@ -103,6 +106,7 @@ A \link{tibble} with the results from the eFS (see \code{run()} method)}
 \item \href{#method-EnsembleFeatureSelection-supported_lrn_ids}{\code{eFS$supported_lrn_ids()}}
 \item \href{#method-EnsembleFeatureSelection-rfe_info}{\code{eFS$rfe_info()}}
 \item \href{#method-EnsembleFeatureSelection-run}{\code{eFS$run()}}
+\item \href{#method-EnsembleFeatureSelection-fs_stats}{\code{eFS$fs_stats()}}
 \item \href{#method-EnsembleFeatureSelection-clone}{\code{eFS$clone()}}
 }
 }
@@ -293,6 +297,30 @@ a tibble with columns:
 (depends on the \code{msr_id})
 \item \code{ArchiveFSelect} => additional object for validation and checking
 (\strong{not included} by default due to large size)
+}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-EnsembleFeatureSelection-fs_stats"></a>}}
+\if{latex}{\out{\hypertarget{method-EnsembleFeatureSelection-fs_stats}{}}}
+\subsection{Method \code{fs_stats()}}{
+Frequency selection statistics.
+This function uses the best feature subsets found by RFE
+and creates one table per RSF learner with the features in descending
+order of selection frequency.
+A consensus frequency results table across all feature subsets generated
+by all RSFs in the RFE is also returned.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{eFS$fs_stats()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+A list of \code{tibble}s with columns:
+\itemize{
+\item \code{feat_name} => feature name
+\item \code{times} => how many times a feature was chosen in the best feature
+subsets across all RFE runs?
+\item \code{freq} => selection frequency
 }
 }
 }

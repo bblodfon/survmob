@@ -47,8 +47,11 @@
 #'
 #' # result tibble
 #' res = efs$result
-#'
 #' res
+#'
+#' # get frequency selection stats (per learner and consensus)
+#' efs$fs_stats()
+#'
 #' @export
 eFS = R6Class('EnsembleFeatureSelection',
   public = list(
@@ -401,6 +404,51 @@ eFS = R6Class('EnsembleFeatureSelection',
       res = bind_rows(result)
       self$result = res
       invisible(res)
+    },
+
+    #' @description Frequency selection statistics.
+    #' This function uses the best feature subsets found by RFE
+    #' and creates one table per RSF learner with the features in descending
+    #' order of selection frequency.
+    #' A consensus frequency results table across all feature subsets generated
+    #' by all RSFs in the RFE is also returned.
+    #'
+    #' @return A list of `tibble`s with columns:
+    #'    - `feat_name` => feature name
+    #'    - `times` => how many times a feature was chosen in the best feature
+    #' subsets across all RFE runs?
+    #'    - `freq` => selection frequency
+    fs_stats = function() {
+      result = self$result
+      if (is.null(result)) stop('Need to execute run() first')
+
+      # 1 frequency table per RSF learner
+      freq_list = list()
+      lrn_ids = unique(result$lrn_id)
+      for (id in lrn_ids) {
+        res_subset = result %>% filter(lrn_id == id)
+
+        sf_list = res_subset$selected_features
+
+        n = length(sf_list)
+        res = sort(table(unlist(sf_list)), decreasing = TRUE)
+        times = as.vector(unname(res))
+        freq_list[[id]] =
+          tibble(feat_name = names(res), times = times, freq = times/n)
+      }
+
+      # 1 frequency table for all RSFs together (consensus)
+      if (length(lrn_ids) > 1) {
+        sf_list = result$selected_features
+
+        n = length(sf_list) # total number of best subsets
+        res = sort(table(unlist(sf_list)), decreasing = TRUE)
+        times = as.vector(unname(res))
+        freq_list[['consensus']] =
+          tibble(feat_name = names(res), times = times, freq = times/n)
+      }
+
+      freq_list
     }
   ),
   private = list(

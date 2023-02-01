@@ -135,3 +135,37 @@ test_that('run() works', {
   #   repeats = 1, mtry_ratio = 0.8) # BUG!!!
   # efs2$run(task = taskv, verbose = TRUE)
 })
+
+test_that('fs_stats() works', {
+  efs = eFS$new(nthreads_rsf = 1)
+  expect_error(efs$fs_stats())
+
+  # hacky result object (1 learner)
+  efs$result = tibble(
+    lrn_id = rep('lrn', 4),
+    iter   = 1:4,
+    selected_features = list(LETTERS[1:4], LETTERS[2:3], LETTERS[2:6], LETTERS[3]),
+    score  = rep(0.98, 4)
+  )
+
+  freq_list = efs$fs_stats()
+  expect_class(freq_list, 'list')
+  expect_equal(length(freq_list), 1)
+  expect_equal(names(freq_list), 'lrn')
+  expect_equal(freq_list$lrn$feat_name[1:3], c('C', 'B', 'D'))
+
+  # hacky result object (2 learners)
+  efs$result = tibble(
+    lrn_id = c('lrn1', 'lrn1', 'lrn2', 'lrn2'),
+    iter   = 1:4,
+    selected_features = list(LETTERS[1:3], LETTERS[2:3], LETTERS[2:6], LETTERS[3]),
+    score  = rep(0.98, 4)
+  )
+
+  freq_list2 = efs$fs_stats()
+  expect_class(freq_list2, 'list')
+  expect_equal(length(freq_list2), 3)
+  expect_equal(names(freq_list2), c('lrn1', 'lrn2', 'consensus'))
+  expect_equal(freq_list2$lrn2$feat_name[1], 'C')
+  expect_equal(freq_list2$consensus$feat_name[1:2], c('C', 'B'))
+})
