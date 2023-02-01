@@ -69,6 +69,8 @@ test_that('RSF learners and ids are properly initialized', {
   expect_equal(eFS$new(lrn_ids = 'rsf_logrank')$lrn_ids, 'rsf_logrank')
   expect_equal(eFS$new(lrn_ids = supp_lrn_ids[1:2])$lrn_ids, supp_lrn_ids[1:2])
   expect_error(efs$new(lrn_ids = c('rsf_logrank', 'UnknownID')))
+  expect_error(efs$new(lrn_ids = c()))
+  expect_error(efs$new(lrn_ids = NULL))
 
   # check that learners have proper hyperparameters
   efs = eFS$new(nthreads_rsf = 3)

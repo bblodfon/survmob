@@ -175,7 +175,6 @@ eFS = R6Class('EnsembleFeatureSelection',
     #'    Therefore more bagged trees are being created with smaller feature
     #'    subsets.
     initialize = function(
-
       lrn_ids = self$supported_lrn_ids(), msr_id = 'harrell_c',
       resampling = mlr3::rsmp('repeated_cv', repeats = 5, folds = 5),
       repeats = 100, n_features = 2, feature_fraction = 0.8,
@@ -184,9 +183,9 @@ eFS = R6Class('EnsembleFeatureSelection',
 
       # learner ids
       supp_lrn_ids = self$supported_lrn_ids()
-      if (!all(lrn_ids %in% supp_lrn_ids)) {
-        stop(paste0('You have used some unsupported learner ids. \n
-          Available ids: ', paste0(supp_lrn_ids, collapse = ', ')))
+      if (!all(lrn_ids %in% supp_lrn_ids) || length(lrn_ids) == 0) {
+        stop(paste0('You have used some unsupported learner ids or none at all.
+          \nAvailable ids: ', paste0(supp_lrn_ids, collapse = ', ')))
       }
       self$lrn_ids = lrn_ids
 
