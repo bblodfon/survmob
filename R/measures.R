@@ -37,7 +37,7 @@ bench_msrs = function() {
   uno_c = msr('surv.cindex', weight_meth = 'G2')
   uno_c$label = 'UnoC'
 
-  # Integrated Brier Score (with proper = TRUE, method=2)
+  # Integrated Brier Score (with proper = TRUE, method = 2)
   ibrier = msr('surv.graf')
   ibrier$label = 'IBrier'
   ibrier$param_set$values$proper = TRUE

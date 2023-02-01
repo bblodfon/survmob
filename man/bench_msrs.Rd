@@ -12,7 +12,7 @@ measures used for benchmarking purposes
 }
 \description{
 A convenient function that returns a table with measures that
-can be used for benchmarking survival learners
+can be used for benchmarking survival learners.
 }
 \details{
 The following measures are provided via \link{mlr3proba}:
@@ -25,10 +25,17 @@ The following measures are provided via \link{mlr3proba}:
 \item Calibration measures (survival \code{distr} prediction type)
 \itemize{
 \item \link[mlr3proba:mlr_measures_surv.graf]{Integrated Brier Score} (with \emph{proper = TRUE, method = 2}, estimates KM censoring distribution)
-\item \link[mlr3proba:mlr_measures_surv.rcll]{Right-Censored Log-Loss} (strictly proper calibration score)
+\item \link[mlr3proba:mlr_measures_surv.rcll]{Right-Censored Log-Loss} (proper calibration score)
 \item \link[mlr3proba:mlr_measures_surv.dcalib]{D-Calibration} (with \emph{B = 10, chisq = FALSE}, returning the measure and not the p-value)
 }
 }
+
+Any of the above measures \strong{can} be used for model \emph{evaluation} (but depends
+on several other factors if they \strong{should} be used, e.g. censoring
+distribution, dataset size, proportion of events in the test set, etc.).
+For model \emph{optimization/tuning}, we suggest the Right-Censored Log-Loss
+for survival predictions and Uno's C-index for ranking predictions
+(e.g. linear predictors).
 }
 \examples{
 library(mlr3proba)
