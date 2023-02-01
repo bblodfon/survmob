@@ -11,7 +11,7 @@ lgr::get_logger('mlr3')$set_threshold('warn')
 
 # code/objects available to all tests
 ## veteran task
-taskv = as_task_surv(x = survival::veteran,
+taskv = as_task_surv(x = survival::veteran, id = 'veteran',
   time = 'time', event = 'status')
 poe = po('encode')
 taskv = poe$train(list(taskv))[[1L]]
