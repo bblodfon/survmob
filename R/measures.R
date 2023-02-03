@@ -32,17 +32,19 @@ bench_msrs = function() {
   # Harrell's C-index
   harrell_c = msr('surv.cindex')
   harrell_c$label = 'HarrellC'
+  harrell_c$id = 'surv.cindex.harrell'
 
   # Uno's C-index
   uno_c = msr('surv.cindex', weight_meth = 'G2')
   uno_c$label = 'UnoC'
+  uno_c$id = 'surv.cindex.uno'
 
   # Integrated Brier Score (with proper = TRUE, method = 2)
   ibrier = msr('surv.graf')
   ibrier$label = 'IBrier'
   ibrier$param_set$values$proper = TRUE
 
-  # Ring-Censored Log-Loss
+  # Right-Censored Log-Loss
   rcll = msr('surv.rcll')
   rcll$label = 'RCLL'
 

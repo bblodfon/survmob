@@ -2,6 +2,7 @@ test_that('bench_msrs returns the expected measures', {
   ms = bench_msrs()
   expect_equal(dim(ms), c(5, 2))
 
+  # check external measure ids
   expect_equal(ms$id, c('harrell_c', 'uno_c', 'ibrier', 'rcll', 'dcal'))
 
   ibrier = ms[id == 'ibrier']$measure[[1L]]
@@ -13,6 +14,10 @@ test_that('bench_msrs returns the expected measures', {
   # check labels
   msr_labels = sapply(ms$measure, function(measure) measure$label)
   expect_equal(msr_labels, c('HarrellC', 'UnoC', 'IBrier', 'RCLL', 'Dcal'))
+
+  # check that the two C-indexes' internal ids are different
+  msr_ids = sapply(ms$measure, function(measure) measure$id)
+  expect_equal(msr_ids[1:2], c('surv.cindex.harrell', 'surv.cindex.uno'))
 })
 
 test_that('oob_error with ranger() works', {
