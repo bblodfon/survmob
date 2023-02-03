@@ -5,11 +5,23 @@ test_that('bench_msrs returns the expected measures', {
   # check external measure ids
   expect_equal(ms$id, c('harrell_c', 'uno_c', 'ibrier', 'rcll', 'dcal'))
 
+  # Uno's C-index
+  uno_c = ms[id == 'uno_c']$measure[[1L]]
+  expect_class(uno_c, c('R6', 'MeasureSurv', 'MeasureSurvCindex'))
+  expect_equal(uno_c$param_set$values$weight_meth, 'G2')
+  expect_equal(uno_c$param_set$values$eps, 1e-3)
+
+  # Integrated Brier Score
   ibrier = ms[id == 'ibrier']$measure[[1L]]
   expect_class(ibrier, c('R6', 'MeasureSurv', 'MeasureSurvGraf'))
   expect_equal(ibrier$param_set$values$integrated, TRUE)
   expect_equal(ibrier$param_set$values$method, 2)
   expect_equal(ibrier$param_set$values$proper, TRUE)
+
+  # RCLL
+  rcll = ms[id == 'rcll']$measure[[1L]]
+  expect_class(rcll, c('R6', 'MeasureSurv', 'MeasureSurvRCLL'))
+  expect_equal(rcll$param_set$values$eps, 1e-15)
 
   # check labels
   msr_labels = sapply(ms$measure, function(measure) measure$label)
