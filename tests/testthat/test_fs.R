@@ -126,17 +126,16 @@ test_that('run() works', {
   expect_equal(efs$result$selected_features[[1L]], sel_feats)
   expect_equal(efs$result$nfeatures, length(sel_feats))
 
-  # check when bug in RCLL is fixed
+  # check again when BUG in RCLL is fixed
   # efs2 = eFS$new(lrn_ids = c('rsf_logrank'), nthreads_rsf = 4,
   #   msr_id = 'rcll', resampling = rsmp('cv', folds = 8),
-  #   repeats = 1, mtry_ratio = 0.8) # BUG!!!
+  #   repeats = 1, mtry_ratio = 0.8)
 
   # check that msr_id and resampling are different
-  expect_equal(efs2$msr_id, 'rcll')
-  expect_equal(efs2$resampling$id, 'cv')
-  #expect_equal(efs2$resampling$param_set$values$repeats, 5)
-  #expect_equal(efs2$resampling$param_set$values$folds, 5)
-
+  # expect_equal(efs2$msr_id, 'rcll')
+  # expect_equal(efs2$resampling$id, 'cv')
+  # expect_equal(efs2$resampling$param_set$values$folds, 8)
+  #
   # efs2$run(task = taskv, verbose = TRUE)
 })
 
