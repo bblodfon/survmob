@@ -35,18 +35,18 @@ task = pre$train(task)[[1]]
 # supported lrn ids
 eFS$new()$supported_lrn_ids()
 
-# create eFS object where every RSF is trained on each RFE feature subset
-# using all features (train set equals the test set) and the out-of-bag
-# error is used to assess predictive performance (1 - Cindex)
+# create eFS object
 efs = eFS$new(lrn_ids = c('rsf_logrank', 'rsf_cindex'), nthreads_rsf = 4,
-  feature_fraction = 0.9, n_features = 1, mtry_ratio = 0.5,
-  repeats = 3, msr_id = 'oob_error', resampling = rsmp('insample')
+  feature_fraction = 0.9, n_features = 1, mtry_ratio = 0.5, repeats = 3
 )
 
 # useful info for RFE (adaptive mtry.ratio, subset sizes)
 efs$rfe_info(task)
 
 # execute ensemble feature selection
+# In each RFE iteration, every RSF will be trained on all the features
+# available and the out-of-bag error will be used to assess predictive
+# performance (1 - Harrell's Cindex)
 efs$run(task)
 
 # result tibble
@@ -118,8 +118,8 @@ Creates a new instance of this \link[R6:R6Class]{R6} class.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{eFS$new(
   lrn_ids = self$supported_lrn_ids(),
-  msr_id = "harrell_c",
-  resampling = mlr3::rsmp("repeated_cv", repeats = 5, folds = 5),
+  msr_id = "oob_error",
+  resampling = mlr3::rsmp("insample"),
   repeats = 100,
   n_features = 2,
   feature_fraction = 0.8,
@@ -146,11 +146,11 @@ This will let us get the \link[mlr3:Measure]{measure} to use in the
 \link[mlr3fselect:AutoFSelector]{AutoFSelector}.
 Must be one of the available ids provided via the \link{bench_msrs} function
 or the \link[mlr3:mlr_measures_oob_error]{oob_error}.
-Default is Harrell's C-index.}
+Default is 'oob_error'.}
 
 \item{\code{resampling}}{\link[mlr3:Resampling]{Resampling} for the
 \link[mlr3fselect:AutoFSelector]{AutoFSelector}.
-Default resampling is 5 times 5-fold CV.}
+Default resampling \link[mlr3:mlr_resamplings_insample]{insample}.}
 
 \item{\code{repeats}}{Number of times to run the RFE algorithm on each RSF
 learner. Defaults to 100.}
@@ -181,12 +181,11 @@ Default: TRUE.}
 }
 \subsection{Details}{
 \itemize{
-\item If \code{msr_id} is \code{oob_error}:
+\item By default, \code{msr_id} is \code{oob_error}:
 \itemize{
-\item Make sure to check which is the \code{oob_error} provided by each RSF
-learner (should be the same ideally, usually 1 - Cindex)
-\item It's more efficient to have an \link[=mlr_resamplings_insample]{insample resampling}
-in that case.
+\item Each RSF provides the (1 - Harrell's C-index) as Out-Of-Bag error
+\item An \link[mlr3:mlr_resamplings_insample]{insample resampling} is used in that
+case in order to use all training data for bootstrapping in the RSFs.
 }
 \item \code{adaptive_mr}:
 \itemize{
