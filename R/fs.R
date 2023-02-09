@@ -31,18 +31,18 @@
 #' # supported lrn ids
 #' eFS$new()$supported_lrn_ids()
 #'
-#' # create eFS object where every RSF is trained on each RFE feature subset
-#' # using all features (train set equals the test set) and the out-of-bag
-#' # error is used to assess predictive performance (1 - Cindex)
+#' # create eFS object
 #' efs = eFS$new(lrn_ids = c('rsf_logrank', 'rsf_cindex'), nthreads_rsf = 4,
-#'   feature_fraction = 0.9, n_features = 1, mtry_ratio = 0.5,
-#'   repeats = 3, msr_id = 'oob_error', resampling = rsmp('insample')
+#'   feature_fraction = 0.9, n_features = 1, mtry_ratio = 0.5, repeats = 3
 #' )
 #'
 #' # useful info for RFE (adaptive mtry.ratio, subset sizes)
 #' efs$rfe_info(task)
 #'
 #' # execute ensemble feature selection
+#' # In each RFE iteration, every RSF will be trained on all the features
+#' # available and the out-of-bag error will be used to assess predictive
+#' # performance (1 - Harrell's Cindex)
 #' efs$run(task)
 #'
 #' # result tibble
@@ -119,11 +119,11 @@ eFS = R6Class('EnsembleFeatureSelection',
     #' [AutoFSelector][mlr3fselect::AutoFSelector].
     #' Must be one of the available ids provided via the [bench_msrs] function
     #' or the [oob_error][mlr3::mlr_measures_oob_error].
-    #' Default is Harrell's C-index.
+    #' Default is 'oob_error'.
     #'
     #' @param resampling [Resampling][mlr3::Resampling] for the
     #' [AutoFSelector][mlr3fselect::AutoFSelector].
-    #' Default resampling is 5 times 5-fold CV.
+    #' Default resampling [insample][mlr3::ResamplingInsample].
     #'
     #' @param repeats Number of times to run the RFE algorithm on each RSF
     #' learner. Defaults to 100.
@@ -151,11 +151,10 @@ eFS = R6Class('EnsembleFeatureSelection',
     #' Default: TRUE.
     #'
     #' @details
-    #' - If `msr_id` is `oob_error`:
-    #'    - Make sure to check which is the `oob_error` provided by each RSF
-    #' learner (should be the same ideally, usually 1 - Cindex)
-    #'    - It's more efficient to have an [insample resampling][mlr_resamplings_insample]
-    #'    in that case.
+    #' - By default, `msr_id` is `oob_error`:
+    #'    - Each RSF provides the (1 - Harrell's C-index) as Out-Of-Bag error
+    #'    - An [insample resampling][mlr3::ResamplingInsample] is used in that
+    #'    case in order to use all training data for bootstrapping in the RSFs.
     #' - `adaptive_mr`:
     #'    - During the execution of the RFE algorithm, progressively smaller
     #'    feature subsets are used, as dictated by the `feature_fraction`
@@ -178,8 +177,9 @@ eFS = R6Class('EnsembleFeatureSelection',
     #'    Therefore more bagged trees are being created with smaller feature
     #'    subsets.
     initialize = function(
-      lrn_ids = self$supported_lrn_ids(), msr_id = 'harrell_c',
-      resampling = mlr3::rsmp('repeated_cv', repeats = 5, folds = 5),
+      lrn_ids = self$supported_lrn_ids(),
+      msr_id = 'oob_error',
+      resampling = mlr3::rsmp('insample'),
       repeats = 100, n_features = 2, feature_fraction = 0.8,
       nthreads_rsf = parallelly::availableCores(), num_trees = 250,
       mtry_ratio = 0.05, adaptive_mr = TRUE) {

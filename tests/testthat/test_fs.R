@@ -5,10 +5,8 @@ test_that('eFS is initialized properly', {
   expect_null(efs$task_id)
 
   # RFE/AutoFSelector parameters
-  expect_equal(efs$msr_id, 'harrell_c')
-  expect_equal(efs$resampling$id, 'repeated_cv')
-  expect_equal(efs$resampling$param_set$values$repeats, 5)
-  expect_equal(efs$resampling$param_set$values$folds, 5)
+  expect_equal(efs$msr_id, 'oob_error')
+  expect_equal(efs$resampling$id, 'insample')
   expect_equal(efs$repeats, 100)
   expect_equal(efs$feature_fraction, 0.8)
   expect_equal(efs$n_features, 2)
@@ -90,7 +88,7 @@ test_that('RSF learners and ids are properly initialized', {
 test_that('run() works', {
   efs = eFS$new(lrn_ids = 'rsf_logrank', nthreads_rsf = 1,
     feature_fraction = 0.9, n_features = 1, mtry_ratio = 0.5,
-    repeats = 1, msr_id = 'oob_error', resampling = rsmp('insample')
+    repeats = 1
   )
   expect_null(efs$result)
   expect_null(efs$task_id)
@@ -131,8 +129,14 @@ test_that('run() works', {
   # check when bug in RCLL is fixed
   # efs2 = eFS$new(lrn_ids = c('rsf_logrank'), nthreads_rsf = 4,
   #   msr_id = 'rcll', resampling = rsmp('cv', folds = 8),
-  #   #msr_id = 'oob_error', resampling = rsmp('insample'),
   #   repeats = 1, mtry_ratio = 0.8) # BUG!!!
+
+  # check that msr_id and resampling are different
+  expect_equal(efs2$msr_id, 'rcll')
+  expect_equal(efs2$resampling$id, 'cv')
+  #expect_equal(efs2$resampling$param_set$values$repeats, 5)
+  #expect_equal(efs2$resampling$param_set$values$folds, 5)
+
   # efs2$run(task = taskv, verbose = TRUE)
 })
 
