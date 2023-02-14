@@ -39,18 +39,26 @@
 #' # useful info for RFE (adaptive mtry.ratio, subset sizes)
 #' efs$rfe_info(task)
 #'
-#' # execute ensemble feature selection
+#' # Execute ensemble feature selection
 #' # In each RFE iteration, every RSF will be trained on all the features
 #' # available and the out-of-bag error will be used to assess predictive
 #' # performance (1 - Harrell's Cindex)
-#' efs$run(task)
+#' efs$run(task, verbose = TRUE)
 #'
-#' # result tibble
+#' # Get result in a tibble format
 #' res = efs$result
 #' res
 #'
+#' # Get consensus performance score and number of features
+#' median(efs$result$score)
+#' median(efs$result$nfeatures)
+#'
 #' # get frequency selection stats (per learner and consensus)
-#' efs$fs_stats()
+#' fss = efs$fs_stats()
+#'
+#' # Barplot: Feature Selection Frequency
+#' efs$ffs_plot(lrn_id = 'consensus', title = 'RSF consensus')
+#' efs$ffs_plot(lrn_id = 'rsf_logrank', title = 'RSF logrank')
 #'
 #' @export
 eFS = R6Class('EnsembleFeatureSelection',
@@ -304,10 +312,10 @@ eFS = R6Class('EnsembleFeatureSelection',
     #'
     #' @return a tibble with columns:
     #'    - `lrn_id` => which learner was used
-    #'    - `iter` => in this particular execution of RFE (out of a total `repeats`)
+    #'    - `iter` => which iteration of RFE
     #'    - `selected_features` => the best feature subset selected by RFE
     #'    - `nfeatures` => how many features were selected
-    #'    - `score` => the performance score of the chosen best feature subset
+    #'    - `score` => the performance score of the best chosen feature subset
     #'     (depends on the `msr_id`)
     #'    - `ArchiveFSelect` => additional object for validation and checking
     #'    (**not included** by default due to large size)
@@ -353,6 +361,8 @@ eFS = R6Class('EnsembleFeatureSelection',
         by = character()
       )
       if (verbose) {
+        message(length(self$lrn_ids), ' RSF learner(s) x ',
+                self$repeats, ' repeats')
         message('A total of ', nrow(rfe_grid), ' RFE runs')
       }
 
@@ -363,8 +373,8 @@ eFS = R6Class('EnsembleFeatureSelection',
         iter = rfe_grid[index,]$iter
 
         if (verbose) {
-          message('### Learner: ', learner$label, ' (', iter, '/',
-            self$repeats, ') ###')
+          message('### Learner: ', learner$id, ' (', iter, '/',
+            self$repeats, '), Total: (', index, '/', nrow(rfe_grid), ')')
         }
 
         at = AutoFSelector$new(
@@ -407,11 +417,11 @@ eFS = R6Class('EnsembleFeatureSelection',
     },
 
     #' @description Frequency selection statistics.
-    #' This function uses the best feature subsets found by RFE
+    #' This function uses the best feature sets found by RFE
     #' and creates one table per RSF learner with the features in descending
     #' order of selection frequency.
-    #' A consensus frequency results table across all feature subsets generated
-    #' by all RSFs in the RFE is also returned.
+    #' A consensus frequency results table across all feature sets generated
+    #' by all RSFs during the RFE is also returned.
     #'
     #' @return A list of `tibble`s with columns:
     #'    - `feat_name` => feature name
@@ -449,6 +459,190 @@ eFS = R6Class('EnsembleFeatureSelection',
       }
 
       freq_list
+    },
+
+    #' @description Stability assessment of the ensemble feature selection.
+    #' Currently two stability metrics are supported via the [stabm] R package,
+    #' namely Jaccard and Nogueira's measure.
+    #' Stability is assessed on the feature sets produced per inidividual RSF
+    #' learner used, as well as on all of them combined (consensus stability).
+    #'
+    #' @param task [TaskSurv][mlr3proba::TaskSurv] that was used in `run()`
+    #' @param stab_metrics vector of stability metrics
+    #'
+    #' @return a tibble with a `lrn_id` column and as many columns as the
+    #' stability measures chosen.
+    #' The `lrn_id` column includes the `consensus` stability when the feature
+    #' set from all RSFs are merged (and when more than one RSF learner was
+    #' used).
+    stab = function(task, stab_metrics = NULL) {
+      result = self$result
+      if (is.null(result)) stop('Need to execute run() first')
+      if (self$repeats == 1) stop('Need at least 2 RFE `repeats`, i.e. 2 feature
+        sets, to measure stability')
+
+      # which metrics to use (default => all)
+      avail_metrics = private$.get_stab_metrics()
+      if (is.null(stab_metrics)) {
+        stab_metrics = avail_metrics
+      } else {
+        stopifnot(all(stab_metrics %in% avail_metrics))
+      }
+
+      # Nogueira measure needs the task to get the number of features (p)
+      if ('nogueira' %in% stab_metrics)
+        assert_task(task)
+
+      lrn_ids = unique(result$lrn_id)
+      stab_list = list()
+      for (id in lrn_ids) {
+        res_subset = result %>% filter(lrn_id == id)
+        sf_list    = res_subset$selected_features
+
+        jaccard = NULL
+        if ('jaccard' %in% stab_metrics)
+          jaccard = stabm::stabilityJaccard(features = sf_list,
+            correction.for.chance = 'none')
+
+        nogueira = NULL
+        if ('nogueira' %in% stab_metrics)
+          nogueira = stabm::stabilityNogueira(features = sf_list,
+            p = length(task$feature_names))
+
+        stab_list[[id]] = tibble(lrn_id = id, jaccard = jaccard, nogueira = nogueira)
+      }
+
+      # consensus stability from all feature sets generated by all RSFs
+      if (length(lrn_ids) > 1) {
+        sf_list = result$selected_features
+
+        jaccard = NULL
+        if ('jaccard' %in% stab_metrics)
+          jaccard = stabm::stabilityJaccard(features = sf_list,
+            correction.for.chance = 'none')
+
+        nogueira = NULL
+        if ('nogueira' %in% stab_metrics)
+          nogueira = stabm::stabilityNogueira(features = sf_list,
+            p = length(task$feature_names))
+
+        stab_list[['consensus']] = tibble(lrn_id = 'consensus',
+          jaccard = jaccard, nogueira = nogueira)
+      }
+
+      bind_rows(stab_list)
+    },
+
+    #' @description Feature selection frequency barplot
+    #' @param lrn_id One of RSF learner ids that was used during initialization
+    #' or 'consensus' (default)
+    #' @param top_n plot only the `n` features with the higher selection
+    #' frequency
+    #' @param title title of barplot (if NULL, the `lrn_id` is used)
+    ffs_plot = function(lrn_id = 'consensus', top_n = 10, title = NULL) {
+      fss = self$fs_stats()
+      lrn_ids = names(fss)
+
+      if (!lrn_id %in% lrn_ids)
+        stop(lrn_id, ' not included in ', paste0(lrn_ids, collapse = ', '))
+
+      if (is.null(title)) {
+        title = lrn_id
+      }
+
+      p = fss[[lrn_id]] %>%
+        slice(1:top_n) %>%
+        mutate(feat_name = forcats::fct_reorder(feat_name, times, .desc = FALSE)) %>%
+        ggplot(aes(x = feat_name, y = freq)) +
+        geom_bar(stat = "identity", fill = '#377EB8', show.legend = FALSE) +
+        theme_bw(base_size = 14) +
+        labs(x = 'Feature name', y = 'Selection Frequency', title = title) +
+        scale_y_continuous(labels = scales::label_percent()) +
+        coord_flip()
+
+      p
+    },
+
+    #' @description Produce various plots of the eFS results
+    #'
+    #' @param type Type of plot to produce. Can be `perf` `nfeat`, `stab`
+    #' @param msr_label Measure name as the y-axis label (default: `self$msr_id`)
+    #' @param ylimits Passing on to `ylim()` (y-axis limits)
+    #' @param title Title for plot (default is `self$task_id`, the task that was
+    #' used during `run()`)
+    #' @param include_legend By default no legend is included
+    #' @param task this is needed for `type` = `stab`. Should be the same used
+    #' when executing `run()`
+    #' @param stab_metrics this is needed for `type` = `stab`. By default all
+    #' stability metrics are used.
+    #'
+    #' @details 3 types of plots can be produced:
+    #' 1. **Performance boxplot**
+    #' 2. **Number of features boxplot**
+    #' 3. **Stability metric barplots (1 per metric)**, where also the consensus
+    #' feature set is included as a comparison category. The results are ordered
+    #' according to the values of the first metric used in `stab()` ('jaccard'
+    #' by default) decided by the value of `stab_metrics`.
+    res_plot = function(type = 'perf', msr_label = NULL, ylimits = NULL,
+      title = NULL, include_legend = FALSE, task = NULL, stab_metrics = NULL) {
+      # checks
+      result = self$result
+      if (is.null(result)) stop('Need to execute run() first')
+
+      if (is.null(msr_label)) {
+        msr_label = self$msr_id
+      }
+
+      if (is.null(title)) {
+        title = self$task_id
+      }
+
+      if (type == 'stab' && is.null(task)) {
+        stop('Provide task when type = \'stab\'')
+      }
+
+      if (type == 'perf') {
+        p = result %>%
+          ggplot(aes(x = lrn_id, y = score, fill = lrn_id)) +
+          geom_boxplot() +
+          labs(y = msr_label, x = NULL, title = title)
+      } else if (type == 'nfeat') {
+        p = result %>%
+          ggplot(aes(x = lrn_id, y = nfeatures, fill = lrn_id)) +
+          geom_boxplot() +
+          labs(y = 'Number of selected features', x = NULL, title = title)
+      } else if (type == 'stab') {
+        stab_tbl = self$stab(task, stab_metrics)
+
+        # pick the first stability measure
+        sm = colnames(stab_tbl)[2]
+        # check it's part of the available ones
+        stopifnot(sm %in% private$.get_stab_metrics())
+
+        stab_tbl = stab_tbl %>%
+          mutate(lrn_id = fct_reorder(lrn_id, .data[[sm]], .desc = TRUE)) %>%
+          pivot_longer(cols = !c('lrn_id'), names_to = 'stab_measure')
+
+        p = stab_tbl %>%
+          ggplot(aes(x = lrn_id, y = value, fill = lrn_id)) +
+          geom_bar(position = 'dodge', stat = 'identity') +
+          facet_wrap(~stab_measure) +
+          labs(x = NULL, y = 'Similarity score', title = title)
+      }
+
+      p = p +
+        theme_bw(base_size = 14) +
+        theme(plot.title = element_text(hjust = 0.5))
+
+      if (!is.null(ylimits)) {
+        p = p + ylim(ylimits)
+      }
+
+      if (!include_legend) {
+        p = p + theme(legend.position = 'none')
+      }
+
+      p
     }
   ),
   private = list(
@@ -473,6 +667,11 @@ eFS = R6Class('EnsembleFeatureSelection',
       }
 
       rsf_lrns
+    },
+
+    # convenience function to get ids for the stability measures
+    .get_stab_metrics = function() {
+      c('jaccard', 'nogueira')
     }
   )
 )
