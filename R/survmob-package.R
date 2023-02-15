@@ -3,10 +3,22 @@
 
 ## usethis namespace: start
 #' @importFrom data.table data.table
+#' @importFrom dplyr %>%
 #' @importFrom dplyr bind_rows
 #' @importFrom dplyr filter
 #' @importFrom dplyr full_join
 #' @importFrom dplyr mutate
+#' @importFrom dplyr slice
+#' @importFrom forcats fct_reorder
+#' @importFrom ggplot2 coord_flip
+#' @importFrom ggplot2 facet_wrap
+#' @importFrom ggplot2 geom_bar
+#' @importFrom ggplot2 geom_boxplot
+#' @importFrom ggplot2 ggplot
+#' @importFrom ggplot2 labs
+#' @importFrom ggplot2 scale_y_continuous
+#' @importFrom ggplot2 theme
+#' @importFrom ggplot2 theme_bw
 #' @importFrom lgr get_logger
 #' @importFrom mlr3 lrn
 #' @importFrom mlr3 msr
@@ -26,7 +38,11 @@
 #' @importFrom paradox ps
 #' @importFrom parallelly availableCores
 #' @importFrom R6 R6Class
+#' @importFrom scales label_percent
+#' @importFrom stabm stabilityJaccard
+#' @importFrom stabm stabilityNogueira
 #' @importFrom tibble tibble
+#' @importFrom tidyr pivot_longer
 ## usethis namespace: end
 NULL
 
