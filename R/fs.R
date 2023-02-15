@@ -428,7 +428,7 @@ eFS = R6Class('EnsembleFeatureSelection',
       invisible(res)
     },
 
-    #' @description Frequency selection statistics.
+    #' @description Frequency selection statistics (feature ranking).
     #' This function uses the best feature sets found by RFE
     #' and creates one table per RSF learner with the features in descending
     #' order of selection frequency.
