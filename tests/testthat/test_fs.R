@@ -127,16 +127,16 @@ test_that('run() works', {
   expect_equal(efs$result$nfeatures, length(sel_feats))
 
   # check again when BUG in RCLL is fixed
-  # efs2 = eFS$new(lrn_ids = c('rsf_logrank'), nthreads_rsf = 4,
-  #   msr_id = 'rcll', resampling = rsmp('cv', folds = 8),
-  #   repeats = 1, mtry_ratio = 0.8)
+  efs2 = eFS$new(lrn_ids = c('rsf_logrank'), nthreads_rsf = 1,
+    msr_id = 'rcll', resampling = rsmp('cv', folds = 8),
+    repeats = 1, mtry_ratio = 0.8)
 
   # check that msr_id and resampling are different
-  # expect_equal(efs2$msr_id, 'rcll')
-  # expect_equal(efs2$resampling$id, 'cv')
-  # expect_equal(efs2$resampling$param_set$values$folds, 8)
-  #
-  # efs2$run(task = taskv, verbose = TRUE)
+  expect_equal(efs2$msr_id, 'rcll')
+  expect_equal(efs2$resampling$id, 'cv')
+  expect_equal(efs2$resampling$param_set$values$folds, 8)
+
+  #efs2$run(task = taskv, verbose = TRUE)
 })
 
 test_that('fs_stats() works', {
@@ -171,4 +171,39 @@ test_that('fs_stats() works', {
   expect_equal(names(freq_list2), c('lrn1', 'lrn2', 'consensus'))
   expect_equal(freq_list2$lrn2$feat_name[1], 'C')
   expect_equal(freq_list2$consensus$feat_name[1:2], c('C', 'B'))
+})
+
+test_that('stab() works', {
+  efs = eFS$new(nthreads_rsf = 1)
+  expect_error(efs$stab()) # need to have a `$result`
+
+  # hacky result object (1 learner)
+  efs$result = tibble(
+    lrn_id = rep('lrn', 4),
+    iter   = 1:4,
+    selected_features = list(LETTERS[1:4], LETTERS[2:3], LETTERS[2:6], LETTERS[3]),
+    score  = rep(0.98, 4)
+  )
+
+  # all measures asked by default so need to provide task (Nogueira measure)
+  expect_error(efs$stab())
+  expect_error(efs$stab(stab_metrics = 'nogueira'))
+  stab_ms = efs$.__enclos_env__$private$.get_stab_metrics()
+  expect_equal(stab_ms, c('jaccard', 'nogueira'))
+  # not in the available list
+  expect_error(efs$stab(stab_metrics = 'NotValidStabilityMeasure'))
+
+  # don't need task for Jaccard
+  t1 = efs$stab(stab_metrics = 'jaccard')
+  expect_equal(colnames(t1), c('lrn_id', 'jaccard'))
+  expect_equal(t1$lrn_id, 'lrn')
+
+  # hacky task
+  m = as.data.frame(matrix(data = rep(0,10), nrow = 1))
+  colnames(m) = c('time', 'status', LETTERS[1:8])
+  task = as_task_surv(x = m, id = 'empty', time = 'time', event = 'status')
+
+  t2 = efs$stab(task)
+  expect_equal(colnames(t2), c('lrn_id', 'jaccard', 'nogueira'))
+  expect_equal(t2$lrn_id, 'lrn')
 })
