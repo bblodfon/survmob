@@ -21,6 +21,8 @@ library(mlr3proba)
 library(mlr3fselect)
 library(mlr3pipelines)
 library(mlr3extralearners)
+library(ggplot2)
+set.seed(42)
 
 # less logging
 lgr::get_logger('bbotk')$set_threshold('warn')
@@ -36,25 +38,43 @@ task = pre$train(task)[[1]]
 eFS$new()$supported_lrn_ids()
 
 # create eFS object
-efs = eFS$new(lrn_ids = c('rsf_logrank', 'rsf_cindex'), nthreads_rsf = 4,
-  feature_fraction = 0.9, n_features = 1, mtry_ratio = 0.5, repeats = 3
+efs = eFS$new(lrn_ids = c('rsf_logrank', 'rsf_cindex'), nthreads_rsf = 2,
+  feature_fraction = 0.6, n_features = 1, mtry_ratio = 0.5, repeats = 3
 )
 
 # useful info for RFE (adaptive mtry.ratio, subset sizes)
 efs$rfe_info(task)
 
-# execute ensemble feature selection
+# Execute ensemble feature selection
 # In each RFE iteration, every RSF will be trained on all the features
 # available and the out-of-bag error will be used to assess predictive
 # performance (1 - Harrell's Cindex)
-efs$run(task)
+efs$run(task, verbose = TRUE)
 
-# result tibble
+# Get result in a tibble format
 res = efs$result
 res
 
+# Get consensus performance score and number of features
+median(res$score) # 1 - C-index
+median(res$nfeatures)
+
 # get frequency selection stats (per learner and consensus)
-efs$fs_stats()
+fss = efs$fs_stats()
+fss$consensus
+
+# Barplots: Feature Selection Frequency
+efs$ffs_plot(lrn_id = 'consensus', title = 'RSF consensus')
+efs$ffs_plot(lrn_id = 'rsf_logrank', title = 'RSF logrank')
+
+# Performance plot (per RSF learner)
+efs$res_plot(msr_label = 'OOB (1 - C-index)')
+
+# Number of selected features plot (per RSF learner)
+efs$res_plot(type = 'nfeat', ylimits = c(3,7))
+
+# Stability plot
+efs$res_plot(type = 'stab', task = task)
 
 }
 \section{Public fields}{
@@ -107,6 +127,9 @@ A \link{tibble} with the results from the eFS (see \code{run()} method)}
 \item \href{#method-EnsembleFeatureSelection-rfe_info}{\code{eFS$rfe_info()}}
 \item \href{#method-EnsembleFeatureSelection-run}{\code{eFS$run()}}
 \item \href{#method-EnsembleFeatureSelection-fs_stats}{\code{eFS$fs_stats()}}
+\item \href{#method-EnsembleFeatureSelection-stab}{\code{eFS$stab()}}
+\item \href{#method-EnsembleFeatureSelection-ffs_plot}{\code{eFS$ffs_plot()}}
+\item \href{#method-EnsembleFeatureSelection-res_plot}{\code{eFS$res_plot()}}
 \item \href{#method-EnsembleFeatureSelection-clone}{\code{eFS$clone()}}
 }
 }
@@ -289,10 +312,10 @@ also in the \code{result} field of this object.
 a tibble with columns:
 \itemize{
 \item \code{lrn_id} => which learner was used
-\item \code{iter} => in this particular execution of RFE (out of a total \code{repeats})
+\item \code{iter} => which iteration of RFE
 \item \code{selected_features} => the best feature subset selected by RFE
 \item \code{nfeatures} => how many features were selected
-\item \code{score} => the performance score of the chosen best feature subset
+\item \code{score} => the performance score of the best chosen feature subset
 (depends on the \code{msr_id})
 \item \code{ArchiveFSelect} => additional object for validation and checking
 (\strong{not included} by default due to large size)
@@ -304,11 +327,11 @@ a tibble with columns:
 \if{latex}{\out{\hypertarget{method-EnsembleFeatureSelection-fs_stats}{}}}
 \subsection{Method \code{fs_stats()}}{
 Frequency selection statistics.
-This function uses the best feature subsets found by RFE
+This function uses the best feature sets found by RFE
 and creates one table per RSF learner with the features in descending
 order of selection frequency.
-A consensus frequency results table across all feature subsets generated
-by all RSFs in the RFE is also returned.
+A consensus frequency results table across all feature sets generated
+by all RSFs during the RFE is also returned.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{eFS$fs_stats()}\if{html}{\out{</div>}}
 }
@@ -322,6 +345,111 @@ subsets across all RFE runs?
 \item \code{freq} => selection frequency
 }
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-EnsembleFeatureSelection-stab"></a>}}
+\if{latex}{\out{\hypertarget{method-EnsembleFeatureSelection-stab}{}}}
+\subsection{Method \code{stab()}}{
+Stability assessment of the ensemble feature selection.
+Currently two stability metrics are supported via the \link{stabm} R package,
+namely Jaccard and Nogueira's measure.
+Stability is assessed on the feature sets produced per inidividual RSF
+learner used, as well as on all of them combined (consensus stability).
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{eFS$stab(task, stab_metrics = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{task}}{\link[mlr3proba:TaskSurv]{TaskSurv} that was used in \code{run()}}
+
+\item{\code{stab_metrics}}{vector of stability metrics}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+a tibble with a \code{lrn_id} column and as many columns as the
+stability measures chosen.
+The \code{lrn_id} column includes the \code{consensus} stability when the feature
+set from all RSFs are merged (and when more than one RSF learner was
+used).
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-EnsembleFeatureSelection-ffs_plot"></a>}}
+\if{latex}{\out{\hypertarget{method-EnsembleFeatureSelection-ffs_plot}{}}}
+\subsection{Method \code{ffs_plot()}}{
+Feature selection frequency barplot
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{eFS$ffs_plot(lrn_id = "consensus", top_n = 10, title = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{lrn_id}}{One of RSF learner ids that was used during initialization
+or 'consensus' (default)}
+
+\item{\code{top_n}}{plot only the \code{n} features with the higher selection
+frequency}
+
+\item{\code{title}}{title of barplot (if NULL, the \code{lrn_id} is used)}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-EnsembleFeatureSelection-res_plot"></a>}}
+\if{latex}{\out{\hypertarget{method-EnsembleFeatureSelection-res_plot}{}}}
+\subsection{Method \code{res_plot()}}{
+Produce various plots of the eFS results
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{eFS$res_plot(
+  type = "perf",
+  msr_label = NULL,
+  ylimits = NULL,
+  title = NULL,
+  include_legend = FALSE,
+  task = NULL,
+  stab_metrics = NULL
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{type}}{Type of plot to produce. Can be \code{perf} \code{nfeat}, \code{stab}}
+
+\item{\code{msr_label}}{Measure name as the y-axis label (default: \code{self$msr_id})}
+
+\item{\code{ylimits}}{Passing on to \code{ylim()} (y-axis limits)}
+
+\item{\code{title}}{Title for plot (default is \code{self$task_id}, the task that was
+used during \code{run()})}
+
+\item{\code{include_legend}}{By default no legend is included}
+
+\item{\code{task}}{this is needed for \code{type} = \code{stab}. Should be the same used
+when executing \code{run()}}
+
+\item{\code{stab_metrics}}{this is needed for \code{type} = \code{stab}. By default all
+stability metrics are used.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+3 types of plots can be produced:
+\enumerate{
+\item \strong{Performance boxplot}
+\item \strong{Number of features boxplot}
+\item \strong{Stability metric barplots (1 per metric)}, where also the consensus
+feature set is included as a comparison category. The results are ordered
+according to the values of the first metric used in \code{stab()} ('jaccard'
+by default) decided by the value of \code{stab_metrics}.
+}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-EnsembleFeatureSelection-clone"></a>}}

@@ -17,6 +17,8 @@
 #' library(mlr3fselect)
 #' library(mlr3pipelines)
 #' library(mlr3extralearners)
+#' library(ggplot2)
+#' set.seed(42)
 #'
 #' # less logging
 #' lgr::get_logger('bbotk')$set_threshold('warn')
@@ -32,8 +34,8 @@
 #' eFS$new()$supported_lrn_ids()
 #'
 #' # create eFS object
-#' efs = eFS$new(lrn_ids = c('rsf_logrank', 'rsf_cindex'), nthreads_rsf = 4,
-#'   feature_fraction = 0.9, n_features = 1, mtry_ratio = 0.5, repeats = 3
+#' efs = eFS$new(lrn_ids = c('rsf_logrank', 'rsf_cindex'), nthreads_rsf = 2,
+#'   feature_fraction = 0.6, n_features = 1, mtry_ratio = 0.5, repeats = 3
 #' )
 #'
 #' # useful info for RFE (adaptive mtry.ratio, subset sizes)
@@ -50,15 +52,25 @@
 #' res
 #'
 #' # Get consensus performance score and number of features
-#' median(efs$result$score)
-#' median(efs$result$nfeatures)
+#' median(res$score) # 1 - C-index
+#' median(res$nfeatures)
 #'
 #' # get frequency selection stats (per learner and consensus)
 #' fss = efs$fs_stats()
+#' fss$consensus
 #'
-#' # Barplot: Feature Selection Frequency
+#' # Barplots: Feature Selection Frequency
 #' efs$ffs_plot(lrn_id = 'consensus', title = 'RSF consensus')
 #' efs$ffs_plot(lrn_id = 'rsf_logrank', title = 'RSF logrank')
+#'
+#' # Performance plot (per RSF learner)
+#' efs$res_plot(msr_label = 'OOB (1 - C-index)')
+#'
+#' # Number of selected features plot (per RSF learner)
+#' efs$res_plot(type = 'nfeat', ylimits = c(3,7))
+#'
+#' # Stability plot
+#' efs$res_plot(type = 'stab', task = task)
 #'
 #' @export
 eFS = R6Class('EnsembleFeatureSelection',
