@@ -126,17 +126,23 @@ test_that('run() works', {
   expect_equal(efs$result$selected_features[[1L]], sel_feats)
   expect_equal(efs$result$nfeatures, length(sel_feats))
 
-  # check again when BUG in RCLL is fixed
+  # RCLL may not work with just one observation in the test as censored
+  # so we do a stratified CV split to 4 folds where each fold will have
+  # (2,2,2,3) censored observations as `taskv` has a total of 9
   efs2 = eFS$new(lrn_ids = c('rsf_logrank'), nthreads_rsf = 1,
-    msr_id = 'rcll', resampling = rsmp('cv', folds = 8),
+    msr_id = 'rcll', resampling = rsmp('cv', folds = 4),
     repeats = 1, mtry_ratio = 0.8)
 
   # check that msr_id and resampling are different
   expect_equal(efs2$msr_id, 'rcll')
   expect_equal(efs2$resampling$id, 'cv')
-  expect_equal(efs2$resampling$param_set$values$folds, 8)
+  expect_equal(efs2$resampling$param_set$values$folds, 4)
 
-  #efs2$run(task = taskv, verbose = TRUE)
+  taskv2 = taskv$clone(deep = TRUE)
+  taskv2$col_roles$stratum = 'status'
+
+  result2 = efs2$run(task = taskv2, verbose = FALSE)
+  expect_equal(result2, efs2$result)
 })
 
 test_that('fs_stats() works', {
