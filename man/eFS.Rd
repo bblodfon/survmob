@@ -230,8 +230,7 @@ features in the RFE subset and \code{n} is the total number of features
 in the original dataset.
 The formula results in an increase of the \code{mtry_ratio}s in the RSFs
 as the feature subsets selected by the RFE algorithm get smaller.
-Therefore more bagged trees are being created with smaller feature
-subsets.
+See \code{rfe_info()} for more details.
 }
 }
 }
@@ -256,8 +255,8 @@ Returns the feature subset sizes that the RFE algorithm
 will use and the corresponding \code{mtry_ratio} and \code{mtry} values for the
 RSF learners.
 These depend on the total number of features of the given task,
-as well as the \code{n_features} and \code{feature_fraction} parameters
-(initialized upon class construction).
+as well as the \code{n_features}, \code{feature_fraction} and \code{adaptive_mr}
+parameters (initialized upon class construction).
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{eFS$rfe_info(task)}\if{html}{\out{</div>}}
 }
@@ -271,7 +270,8 @@ as well as the \code{n_features} and \code{feature_fraction} parameters
 }
 \subsection{Details}{
 The subset sizes are calculated from the respective
-\href{https://github.com/mlr-org/mlr3fselect/blob/HEAD/R/FSelectorRFE.R#L123}{code}.
+\href{https://github.com/mlr-org/mlr3fselect/blob/HEAD/R/FSelectorRFE.R}{code}
+(see \code{rfe_subsets()} function, \code{ml3fselect} v0.10.0).
 }
 
 \subsection{Returns}{
@@ -326,7 +326,7 @@ a tibble with columns:
 \if{html}{\out{<a id="method-EnsembleFeatureSelection-fs_stats"></a>}}
 \if{latex}{\out{\hypertarget{method-EnsembleFeatureSelection-fs_stats}{}}}
 \subsection{Method \code{fs_stats()}}{
-Frequency selection statistics.
+Frequency selection statistics (feature ranking).
 This function uses the best feature sets found by RFE
 and creates one table per RSF learner with the features in descending
 order of selection frequency.
