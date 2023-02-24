@@ -194,8 +194,7 @@ eFS = R6Class('EnsembleFeatureSelection',
     #'    in the original dataset.
     #'    The formula results in an increase of the `mtry_ratio`s in the RSFs
     #'    as the feature subsets selected by the RFE algorithm get smaller.
-    #'    Therefore more bagged trees are being created with smaller feature
-    #'    subsets.
+    #'    See `rfe_info()` for more details.
     initialize = function(
       lrn_ids = self$supported_lrn_ids(),
       msr_id = 'oob_error',
@@ -216,7 +215,7 @@ eFS = R6Class('EnsembleFeatureSelection',
       supp_msr_ids = c(bench_msrs()$id, 'oob_error')
       if (!msr_id %in% supp_msr_ids) {
         stop(paste0('You have used an unsupported measure id. \n
-          Available ids: ', paste0(supp_msr_ids, collapse = ',')))
+          Available ids: ', paste0(supp_msr_ids, collapse = ', ')))
       }
       self$msr_id = msr_id
 
@@ -277,12 +276,13 @@ eFS = R6Class('EnsembleFeatureSelection',
     #' will use and the corresponding `mtry_ratio` and `mtry` values for the
     #' RSF learners.
     #' These depend on the total number of features of the given task,
-    #' as well as the `n_features` and `feature_fraction` parameters
-    #' (initialized upon class construction).
+    #' as well as the `n_features`, `feature_fraction` and `adaptive_mr`
+    #' parameters (initialized upon class construction).
     #'
     #' @details
     #' The subset sizes are calculated from the respective
-    #' [code](https://github.com/mlr-org/mlr3fselect/blob/HEAD/R/FSelectorRFE.R#L123).
+    #' [code](https://github.com/mlr-org/mlr3fselect/blob/HEAD/R/FSelectorRFE.R)
+    #' (see `rfe_subsets()` function, `ml3fselect` v0.10.0).
     #'
     #' @param task [mlr3::Task]
     #' @return a [tibble] with columns `subset_size`, `mtry_ratio` and `mtry`
@@ -386,7 +386,7 @@ eFS = R6Class('EnsembleFeatureSelection',
 
         if (verbose) {
           message('### Learner: ', learner$id, ' (', iter, '/',
-            self$repeats, '), Total: (', index, '/', nrow(rfe_grid), ')')
+            self$repeats, '), Iter: ', index, '/', nrow(rfe_grid))
         }
 
         at = AutoFSelector$new(

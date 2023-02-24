@@ -3,8 +3,11 @@
 #' @description Given a list of [tasks][mlr3::Task], this function produces the
 #' set (list) of all possible combinations of tasks (powerset), combining their
 #' respective features via [mlr3pipelines::mlr_pipeops_featureunion].
-#' Every task in the given list must have **different feature names and task ids**,
-#' but the same target names.
+#' Every task in the given list must have:
+#'
+#' - **Different feature names and task ids**
+#' - Same target names (target columns only from the first task are kept)
+#' - Same number of observations/rows
 #'
 #' @param `tasks` list of [mlr3::Task]s
 #'
@@ -15,6 +18,9 @@ task_powerset = function(tasks) {
   # check that all task ids are different
   tsk_ids = mlr3misc::map_chr(tasks, `[[`, 'id')
   stopifnot(length(unique(tsk_ids)) == length(tsk_ids))
+
+  # check that tasks have same number of rows
+  stopifnot(length(unique(mlr3misc::map_dbl(tasks, `[[`, 'nrow'))) == 1)
 
   task_subsets = lapply(1:length(tasks), combinat::combn, x = tasks,
     simplify = FALSE) %>% unlist(recursive = FALSE)
