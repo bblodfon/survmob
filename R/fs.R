@@ -576,7 +576,7 @@ eFS = R6Class('EnsembleFeatureSelection',
 
     #' @description Produce various plots of the eFS results
     #'
-    #' @param type Type of plot to produce. Can be `perf` `nfeat`, `stab`
+    #' @param type Type of plot to produce. Can be `perf`, `nfeat` or `stab`
     #' @param msr_label Measure name as the y-axis label (default: `self$msr_id`)
     #' @param ylimits Passing on to `ylim()` (y-axis limits)
     #' @param title Title for plot (default is `self$task_id`, the task that was
@@ -639,6 +639,8 @@ eFS = R6Class('EnsembleFeatureSelection',
           geom_bar(position = 'dodge', stat = 'identity') +
           facet_wrap(~stab_measure) +
           labs(x = NULL, y = 'Similarity score', title = title)
+      } else {
+        stop('Wrong type, can be only: perf, nfeat or stab')
       }
 
       p = p +

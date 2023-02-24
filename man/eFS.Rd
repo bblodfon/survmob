@@ -419,7 +419,7 @@ Produce various plots of the eFS results
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{type}}{Type of plot to produce. Can be \code{perf} \code{nfeat}, \code{stab}}
+\item{\code{type}}{Type of plot to produce. Can be \code{perf}, \code{nfeat} or \code{stab}}
 
 \item{\code{msr_label}}{Measure name as the y-axis label (default: \code{self$msr_id})}
 
