@@ -16,7 +16,7 @@ Imports:
     mlr3tuning (>= 0.17.2),
     mlr3extralearners (>= 0.6.0),
     mlr3misc (>= 0.11.0),
-    mlr3fselect (>= 0.9.1),
+    mlr3fselect (>= 0.10.0),
     paradox,
     R6,
     parallelly,
@@ -30,7 +30,8 @@ Imports:
     ggplot2,
     scales,
     stabm,
-    tidyr
+    tidyr,
+    combinat
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

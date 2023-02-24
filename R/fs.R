@@ -396,7 +396,6 @@ eFS = R6Class('EnsembleFeatureSelection',
           terminator = trm('none'),
           fselector = fs('rfe', n_features       = self$n_features,
                                 feature_fraction = self$feature_fraction),
-          store_models = TRUE, # necessary for RFE
           callbacks = mr_clbk
         )
 

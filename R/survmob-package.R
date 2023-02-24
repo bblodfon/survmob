@@ -2,12 +2,15 @@
 "_PACKAGE"
 
 ## usethis namespace: start
+#' @importFrom combinat combn
 #' @importFrom data.table data.table
 #' @importFrom dplyr %>%
 #' @importFrom dplyr bind_rows
 #' @importFrom dplyr filter
 #' @importFrom dplyr full_join
 #' @importFrom dplyr mutate
+#' @importFrom dplyr pull
+#' @importFrom dplyr select
 #' @importFrom dplyr slice
 #' @importFrom forcats fct_reorder
 #' @importFrom ggplot2 coord_flip
@@ -26,6 +29,8 @@
 #' @importFrom mlr3fselect AutoFSelector
 #' @importFrom mlr3fselect callback_fselect
 #' @importFrom mlr3fselect fs
+#' @importFrom mlr3misc map_chr
+#' @importFrom mlr3misc map_dbl
 #' @importFrom mlr3misc open_help
 #' @importFrom mlr3pipelines %>>%
 #' @importFrom mlr3pipelines PipeOpTaskPreproc
