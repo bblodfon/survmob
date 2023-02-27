@@ -277,19 +277,19 @@ SurvLPS = R6::R6Class('SurvLPS',
           paradox::ps(
             num.trees = p_int(100, 1500),
             mtry.ratio = p_dbl(0.1, 0.9),
-            min.node.size = p_int(1, 20)
+            min.node.size = p_int(3, 20)
           )
         } else if (lrn_id == 'rsf_logrank') {
           paradox::ps(
             num.trees = p_int(100, 1500),
             mtry.ratio = p_dbl(0.1, 0.9),
-            min.node.size = p_int(1, 20)
+            min.node.size = p_int(3, 20)
           )
         } else if (lrn_id == 'rsf_maxstat') {
           paradox::ps(
             num.trees = p_int(100, 1500),
             mtry.ratio = p_dbl(0.1, 0.9),
-            min.node.size = p_int(1, 20)
+            min.node.size = p_int(3, 20)
           )
         } else if (lrn_id == 'coxboost') { # CoxBoost
           paradox::ps(
