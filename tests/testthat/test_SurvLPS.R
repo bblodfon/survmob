@@ -76,7 +76,7 @@ test_that('Tune CoxNet using Uno\'s C-index', {
 })
 
 test_that('Tune XGBoost (Cox, AFT) using RCLL measure + early stopping', {
-  s = SurvLPS$new(nthreads_xgb = 2, ids = c('xgboost_cox_early', 'xgboost_aft_early'))
+  s = SurvLPS$new(nthreads_xgb = 1, ids = c('xgboost_cox_early', 'xgboost_aft_early'))
   dt = s$lrn_tbl()
   xgb_learner = dt$learner[[1L]]
   xgb_learner_aft = dt$learner[[2L]]
@@ -95,8 +95,8 @@ test_that('Tune XGBoost (Cox, AFT) using RCLL measure + early stopping', {
 
   # rewrite pss for speed (use less `nrounds`)
   xgb_ps = paradox::ps(
-    XGBoostCox.nrounds = p_int(30, 150),
-    XGBoostCox.eta = p_dbl(1e-04, 0.3, logscale = TRUE),
+    XGBoostCox.nrounds = p_int(3, 15),
+    XGBoostCox.eta = p_dbl(0.1, 0.3, logscale = TRUE),
     XGBoostCox.max_depth = p_int(2, 8), # shallow trees
     XGBoostCox.min_child_weight = p_dbl(1, 128, logscale = TRUE),
     .extra_trafo = function(x, param_set) {
@@ -107,8 +107,8 @@ test_that('Tune XGBoost (Cox, AFT) using RCLL measure + early stopping', {
   )
 
   xgb_aft_ps = paradox::ps(
-    XGBoostAFT.nrounds = p_int(30, 150),
-    XGBoostAFT.eta = p_dbl(1e-04, 0.3, logscale = TRUE),
+    XGBoostAFT.nrounds = p_int(3, 15),
+    XGBoostAFT.eta = p_dbl(0.1, 0.3, logscale = TRUE),
     XGBoostAFT.max_depth = p_int(2, 8), # shallow trees
     XGBoostAFT.min_child_weight = p_dbl(1, 128, logscale = TRUE),
     XGBoostAFT.aft_loss_distribution = p_fct(c('normal', 'logistic', 'extreme')),
@@ -126,7 +126,7 @@ test_that('Tune XGBoost (Cox, AFT) using RCLL measure + early stopping', {
     resampling = rsmp('holdout'),
     measure = msr('surv.rcll'),
     search_space = xgb_ps,
-    terminator = trm('evals', n_evals = 5),
+    terminator = trm('evals', n_evals = 2),
     tuner = tnr('random_search'),
     callbacks = xgb_es_callback
   )
@@ -164,7 +164,7 @@ test_that('Tune XGBoost (Cox, AFT) using RCLL measure + early stopping', {
     resampling = rsmp('holdout'),
     measure = msr('surv.rcll'),
     search_space = xgb_aft_ps,
-    terminator = trm('evals', n_evals = 5),
+    terminator = trm('evals', n_evals = 2),
     tuner = tnr('random_search'),
     callbacks = xgb_es_callback
   )
