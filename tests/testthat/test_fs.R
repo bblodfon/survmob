@@ -59,7 +59,7 @@ test_that('rfe_info() works properly', {
 
 test_that('RSF learners and ids are properly initialized', {
   efs = eFS$new(nthreads_rsf = 3)
-  supp_lrn_ids = c('rsf_cindex', 'rsf_logrank', 'rsf_maxstat')
+  supp_lrn_ids = c('rsf_cindex', 'rsf_logrank', 'rsf_maxstat', 'rsf_extratrees')
 
   # learner ids are assigned properly (when correctly initialized)
   expect_equal(efs$lrn_ids, supp_lrn_ids)
@@ -86,9 +86,8 @@ test_that('RSF learners and ids are properly initialized', {
 })
 
 test_that('run() works', {
-  efs = eFS$new(lrn_ids = 'rsf_logrank', nthreads_rsf = 1,
-    feature_fraction = 0.9, n_features = 1, mtry_ratio = 0.5,
-    repeats = 1
+  efs = eFS$new(lrn_ids = 'rsf_extratrees', nthreads_rsf = 1,
+    n_features = 5, mtry_ratio = 0.5, repeats = 1
   )
   expect_null(efs$result)
   expect_null(efs$task_id)
@@ -127,14 +126,14 @@ test_that('run() works', {
   expect_equal(efs$result$nfeatures, length(sel_feats))
 
   # eFS with RCLL measure
-  efs2 = eFS$new(lrn_ids = 'rsf_logrank', nthreads_rsf = 1,
-    msr_id = 'rcll', resampling = rsmp('cv', folds = 5),
-    repeats = 1, mtry_ratio = 0.8)
+  efs2 = eFS$new(lrn_ids = 'rsf_extratrees', nthreads_rsf = 1,
+    msr_id = 'rcll', resampling = rsmp('cv', folds = 3),
+    repeats = 1, mtry_ratio = 0.8, n_features = 5)
 
   # check that msr_id and resampling are different
   expect_equal(efs2$msr_id, 'rcll')
   expect_equal(efs2$resampling$id, 'cv')
-  expect_equal(efs2$resampling$param_set$values$folds, 5)
+  expect_equal(efs2$resampling$param_set$values$folds, 3)
 
   result2 = efs2$run(task = taskv, verbose = FALSE)
   expect_equal(result2, efs2$result)
