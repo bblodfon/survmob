@@ -34,8 +34,20 @@ test_that('SurvLPS works as expected', {
   expect_equal(learners$xgboost_cox$param_set$values$XGBoostCox.nthread, 4)
 
   # lrn_tbl()
-  tbl = s$lrn_tbl()
-  expect_equal(dim(tbl), c(2, 3))
+  dt = s$lrn_tbl()
+  expect_equal(dim(dt), c(2, 3))
+
+  # test some RSFs
+  s = SurvLPS$new(nthreads_rsf = 5, ids = c('rsf_maxstat', 'rsf_logrank',
+    'rsf_cindex', 'rsf_extratrees'))
+  dt = s$lrn_tbl()
+  expect_equal(dim(dt), c(4, 3))
+  rsf_lrn = dt[id == 'rsf_extratrees']$learner[[1]]
+  expect_class(rsf_lrn, c('LearnerSurv', 'LearnerSurvRanger'))
+  expect_equal(rsf_lrn$param_set$values$num.threads, 5)
+  expect_false(rsf_lrn$param_set$values$verbose)
+  expect_equal(rsf_lrn$param_set$values$splitrule, 'extratrees')
+  expect_equal(rsf_lrn$param_set$values$num.random.splits, 1)
 })
 
 test_that('Tune CoxNet using Uno\'s C-index', {
@@ -107,10 +119,6 @@ test_that('Tune XGBoost (Cox, AFT) using RCLL measure + early stopping', {
       x
     }
   )
-
-  # Reason for skip:
-  # Large `nthreads_xgb` can slow xgboost down when tuning with a small dataset
-  # skip('XGBoost tuning can be very slow')
 
   # XGBoostCox tuning with early stopping
   xgb_at = AutoTuner$new(
