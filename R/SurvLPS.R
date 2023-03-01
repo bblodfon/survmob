@@ -175,7 +175,7 @@ SurvLPS = R6::R6Class('SurvLPS',
           } else if (lrn_id == 'rsf_cindex') { # Random Survival Forests
             lrn('surv.ranger', verbose = FALSE,
               id = 'SurvivalForestCIndex',
-              label = 'Random Forest (C-index splitrule)',
+              label = 'Random Forest (C-index)',
               fallback = lrn('surv.kaplan'),
               num.threads = nthreads_rsf,
               splitrule = 'C'  # Harrell's C-index
@@ -183,7 +183,7 @@ SurvLPS = R6::R6Class('SurvLPS',
           } else if (lrn_id == 'rsf_logrank') {
             lrn('surv.ranger', verbose = FALSE,
               id = 'SurvivalForestLogRank',
-              label = 'Random Forest (Logrank splitrule)',
+              label = 'Random Forest (Logrank)',
               fallback = lrn('surv.kaplan'),
               num.threads = nthreads_rsf,
               splitrule = 'logrank'
@@ -191,10 +191,20 @@ SurvLPS = R6::R6Class('SurvLPS',
           } else if (lrn_id == 'rsf_maxstat') {
             lrn('surv.ranger', verbose = FALSE,
               id = 'SurvivalForestMaxStat',
-              label = 'Random Forest (Maximally selected rank statistics splitrule)',
+              label = 'Random Forest (Maximally selected rank statistics)',
               fallback = lrn('surv.kaplan'),
               num.threads = nthreads_rsf,
               splitrule = 'maxstat'
+            )
+          } else if (lrn_id == 'rsf_extratrees') {
+            lrn('surv.ranger', verbose = FALSE,
+              id = 'SurvivalForestExtraTrees',
+              label = 'Random Forest (Extremely Randomized Trees)',
+              fallback = lrn('surv.kaplan'),
+              num.threads = nthreads_rsf,
+              splitrule = 'extratrees',
+              # default (but keep it here, to show we are not tuning it)
+              num.random.splits = 1
             )
           } else if (lrn_id == 'coxboost') { # CoxBoost
             lrn('surv.coxboost', id = 'CoxBoost',
@@ -286,6 +296,12 @@ SurvLPS = R6::R6Class('SurvLPS',
             min.node.size = p_int(3, 20)
           )
         } else if (lrn_id == 'rsf_maxstat') {
+          paradox::ps(
+            num.trees = p_int(100, 1500),
+            mtry.ratio = p_dbl(0.1, 0.9),
+            min.node.size = p_int(3, 20)
+          )
+        } else if (lrn_id == 'rsf_extratrees') {
           paradox::ps(
             num.trees = p_int(100, 1500),
             mtry.ratio = p_dbl(0.1, 0.9),
@@ -387,6 +403,7 @@ SurvLPS = R6::R6Class('SurvLPS',
       'rsf_cindex',
       'rsf_logrank',
       'rsf_maxstat',
+      'rsf_extratrees',
       'coxboost',
       'xgboost_cox',
       'xgboost_cox_early',
