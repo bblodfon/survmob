@@ -206,6 +206,16 @@ SurvLPS = R6::R6Class('SurvLPS',
               # default (but keep it here, to show we are not tuning it)
               num.random.splits = 1
             )
+          } else if (lrn_id == 'aorsf') {
+            lrn('surv.aorsf',
+              id = 'ObliqueSurvivalForestFast',
+              label = 'Accelerated Oblique Random Forest',
+              fallback = lrn('surv.kaplan'),
+              control_type = 'fast',
+              oobag_pred_type = 'surv',
+              importance = 'anova', # very fast, leave it as it is for now
+              attach_data = TRUE # this is needed for prediction and importance
+            )
           } else if (lrn_id == 'coxboost') { # CoxBoost
             lrn('surv.coxboost', id = 'CoxBoost',
               fallback = lrn('surv.kaplan'),
@@ -307,6 +317,12 @@ SurvLPS = R6::R6Class('SurvLPS',
             mtry.ratio = p_dbl(0.1, 0.9),
             min.node.size = p_int(3, 20)
           )
+        } else if (lrn_id == 'aorsf') {
+          paradox::ps(
+            n_tree = p_int(100, 1500),
+            mtry_ratio = p_dbl(0.1, 0.9),
+            leaf_min_obs = p_int(3, 20)
+          )
         } else if (lrn_id == 'coxboost') { # CoxBoost
           paradox::ps(
             stepno = p_int(50, 500),
@@ -404,6 +420,7 @@ SurvLPS = R6::R6Class('SurvLPS',
       'rsf_logrank',
       'rsf_maxstat',
       'rsf_extratrees',
+      'aorsf',
       'coxboost',
       'xgboost_cox',
       'xgboost_cox_early',

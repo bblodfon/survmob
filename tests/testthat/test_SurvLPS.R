@@ -39,15 +39,22 @@ test_that('SurvLPS works as expected', {
 
   # test some RSFs
   s = SurvLPS$new(nthreads_rsf = 5, ids = c('rsf_maxstat', 'rsf_logrank',
-    'rsf_cindex', 'rsf_extratrees'))
+    'rsf_cindex', 'rsf_extratrees', 'aorsf'))
   dt = s$lrn_tbl()
-  expect_equal(dim(dt), c(4, 3))
+  expect_equal(dim(dt), c(5, 3))
   rsf_lrn = dt[id == 'rsf_extratrees']$learner[[1]]
   expect_class(rsf_lrn, c('LearnerSurv', 'LearnerSurvRanger'))
   expect_equal(rsf_lrn$param_set$values$num.threads, 5)
   expect_false(rsf_lrn$param_set$values$verbose)
   expect_equal(rsf_lrn$param_set$values$splitrule, 'extratrees')
   expect_equal(rsf_lrn$param_set$values$num.random.splits, 1)
+
+  rsf_lrn = dt[id == 'aorsf']$learner[[1]]
+  expect_class(rsf_lrn, c('LearnerSurv', 'LearnerSurvAorsf'))
+  expect_equal(rsf_lrn$param_set$values$control_type, 'fast')
+  expect_equal(rsf_lrn$param_set$values$oobag_pred_type, 'surv')
+  expect_equal(rsf_lrn$param_set$values$importance, 'anova')
+  expect_true(rsf_lrn$param_set$values$attach_data)
 })
 
 test_that('Tune CoxNet using Uno\'s C-index', {

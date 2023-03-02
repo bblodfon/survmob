@@ -269,7 +269,7 @@ eFS = R6Class('EnsembleFeatureSelection',
     supported_lrn_ids = function() {
       s = SurvLPS$new()
       ids = s$lrn_ids()
-      ids[grepl(pattern = 'rsf_', ids)]
+      ids[grepl(pattern = 'rsf', ids)]
     },
 
     #' @description Returns the feature subset sizes that the RFE algorithm
@@ -352,7 +352,12 @@ eFS = R6Class('EnsembleFeatureSelection',
             # adaptive mtry.ratio formula
             mtry.ratio = mr^(log(nfeats)/log(n))
 
-            context$design$learner[[1]]$param_set$set_values(mtry.ratio = mtry.ratio)
+            learner = context$design$learner[[1]]
+            if (startsWith(x = learner$id, prefix = 'Oblique')) {
+              learner$param_set$set_values(mtry_ratio = mtry.ratio)
+            } else {
+              learner$param_set$set_values(mtry.ratio = mtry.ratio)
+            }
           })
       } else {
         mr_clbk = callback_fselect(id = 'empty')
@@ -667,7 +672,7 @@ eFS = R6Class('EnsembleFeatureSelection',
         new(ids = self$lrn_ids, nthreads_rsf = self$nthreads_rsf)$
         lrns()
 
-      # Apply the following parameter list to each RSF learner
+      # Apply the following parameter list to each RSF learner (ranger)
       param_list = list(
         num.trees = self$num_trees,
         mtry.ratio = self$mtry_ratio,
@@ -675,8 +680,21 @@ eFS = R6Class('EnsembleFeatureSelection',
         importance = 'permutation' # don't expose it to the user (yet)
       )
 
+      # Apply the following parameter list to each Oblique RSF learner
+      param_list_oblique = list(
+        n_tree = self$num_trees,
+        mtry_ratio = self$mtry_ratio,
+        leaf_min_obs = 3, # default for survival (RSF)
+        importance = 'anova',
+        attach_data = TRUE # needed for importance
+      )
+
       for (learner in rsf_lrns) {
-        learner$param_set$values = param_list
+        if (startsWith(x = learner$id, prefix = 'Oblique')) {
+          learner$param_set$values = param_list_oblique
+        } else {
+          learner$param_set$values = param_list
+        }
       }
 
       rsf_lrns

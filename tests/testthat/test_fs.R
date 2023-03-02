@@ -59,7 +59,8 @@ test_that('rfe_info() works properly', {
 
 test_that('RSF learners and ids are properly initialized', {
   efs = eFS$new(nthreads_rsf = 3)
-  supp_lrn_ids = c('rsf_cindex', 'rsf_logrank', 'rsf_maxstat', 'rsf_extratrees')
+  supp_lrn_ids = c('rsf_cindex', 'rsf_logrank', 'rsf_maxstat', 'rsf_extratrees',
+    'aorsf')
 
   # learner ids are assigned properly (when correctly initialized)
   expect_equal(efs$lrn_ids, supp_lrn_ids)
@@ -75,12 +76,24 @@ test_that('RSF learners and ids are properly initialized', {
   rsf_lrns = efs$.__enclos_env__$private$.get_lrns()
 
   expect_equal(names(rsf_lrns), supp_lrn_ids)
-  expect_equal(rsf_lrns$rsf_cindex$param_set$values$num.trees, 250)
-  expect_equal(rsf_lrns$rsf_cindex$param_set$values$mtry.ratio, 0.05)
-  expect_equal(rsf_lrns$rsf_cindex$param_set$values$min.node.size, 3)
-  expect_equal(rsf_lrns$rsf_cindex$param_set$values$importance, 'permutation')
 
-  for(rsf_lrn in rsf_lrns) {
+  expect_equal(rsf_lrns$rsf_cindex$param_set$values$num.trees, 250)
+  expect_equal(rsf_lrns$rsf_extratrees$param_set$values$num.trees, 250)
+  expect_equal(rsf_lrns$aorsf$param_set$values$n_tree, 250)
+
+  expect_equal(rsf_lrns$rsf_cindex$param_set$values$mtry.ratio, 0.05)
+  expect_equal(rsf_lrns$rsf_extratrees$param_set$values$mtry.ratio, 0.05)
+  expect_equal(rsf_lrns$aorsf$param_set$values$mtry_ratio, 0.05)
+
+  expect_equal(rsf_lrns$rsf_cindex$param_set$values$min.node.size, 3)
+  expect_equal(rsf_lrns$rsf_extratrees$param_set$values$min.node.size, 3)
+  expect_equal(rsf_lrns$aorsf$param_set$values$leaf_min_obs, 3)
+
+  expect_equal(rsf_lrns$rsf_cindex$param_set$values$importance, 'permutation')
+  expect_equal(rsf_lrns$rsf_extratrees$param_set$values$importance, 'permutation')
+  expect_equal(rsf_lrns$aorsf$param_set$values$importance, 'anova')
+
+  for (rsf_lrn in rsf_lrns) {
     expect_true(all(c('importance', 'oob_error') %in% rsf_lrn$properties))
   }
 })
@@ -137,6 +150,13 @@ test_that('run() works', {
 
   result2 = efs2$run(task = taskv, verbose = FALSE)
   expect_equal(result2, efs2$result)
+
+  # eFS with aorsf
+  efs3 = eFS$new(lrn_ids = 'aorsf', nthreads_rsf = 1,
+    repeats = 1, mtry_ratio = 0.8, n_features = 5)
+
+  result3 = efs3$run(task = taskv, verbose = FALSE)
+  expect_equal(result3, efs3$result3)
 })
 
 test_that('fs_stats() works', {
