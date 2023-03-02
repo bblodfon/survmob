@@ -278,3 +278,59 @@ minimize_backend = function(task) {
     time = 'time', event = 'status'
   )
 }
+
+#' @title Powerset intersect counts
+#'
+#' @description Use on a 0/1 matrix, where e.g. rows are patients and columns
+#' are different data modalities (omics).
+#' This function will return for all possible combination of omics,
+#' the number of patients that have information on ALL these omics (intersection).
+#'
+#' @param `df` A 0/1 [data.frame][data.frame] or [matrix][matrix].
+#' E.g. a (patient, omic) has a value of `1` if the specific patient has that
+#' particular data modality, otherwise `0`.
+#' Column names should be the name of the different omics in that case.
+#'
+#' @return a [tibble][tibble] with columns:
+#' - `omics` => list of omic names that make up the combo
+#' - `n_omics` => number of omics in the combo
+#' - `intersect_count` => number of 'patients' who have all omics in the combo
+#'
+#' @examples
+#' library(dplyr)
+#'
+#' set.seed(42)
+#' m = matrix(sample(x = c(0,1), size = 20, replace = TRUE), ncol = 5, nrow = 4)
+#' colnames(m) = LETTERS[1:5]
+#' pics = powerset_icounts(m)
+#' pics %>%
+#'   arrange(desc(intersect_count)) %>%
+#'   filter(n_omics > 3)
+#'
+#' @export
+powerset_icounts = function(df) {
+  omic_names = colnames(df)
+
+  powerset = lapply(1:length(omic_names), combinat::combn, x = omic_names,
+    simplify = FALSE) %>% unlist(recursive = FALSE)
+
+  d = list()
+  for (index in 1:length(powerset)) {
+    as = powerset[[index]]
+    n_omics = length(as)
+
+    if (n_omics == 1) {
+      intersect_count = sum(df[,as])
+    } else {
+      intersect_count = sum(rowSums(df[,as]) == length(as))
+    }
+
+    d[[index]] = tibble::tibble(
+      omic_combo = list(as),
+      n_omics = n_omics,
+      intersect_count = intersect_count
+    )
+  }
+
+  dplyr::bind_rows(d)
+}
