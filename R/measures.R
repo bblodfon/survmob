@@ -8,7 +8,7 @@
 #'    - [Harrell's C-index][mlr3proba::MeasureSurvCindex] (doesn't account for censoring)
 #'    - [Uno's C-index][mlr3proba::MeasureSurvCindex] (estimates censoring distribution using KM)
 #' - Calibration measures (survival `distr` prediction type)
-#'    - [Integrated Brier Score][mlr3proba::MeasureSurvGraf] (with *proper = TRUE, method = 2*, estimates KM censoring distribution)
+#'    - [Integrated Brier Score][mlr3proba::MeasureSurvGraf] (with *proper = TRUE, method = 2*, estimates KM censoring distribution, is also a measure of discrimination)
 #'    - [Right-Censored Log-Loss][mlr3proba::MeasureSurvRCLL] (proper calibration score)
 #'    - [D-Calibration][mlr3proba::MeasureSurvDCalibration] (with *B = 10, chisq = FALSE*, returning the measure and not the p-value)
 #'
@@ -16,7 +16,7 @@
 #'  on several other factors if they **should** be used, e.g. censoring
 #'  distribution, dataset size, proportion of events in the test set, etc.).
 #'  For model *optimization/tuning*, we suggest the Right-Censored Log-Loss
-#'  for survival predictions and Uno's C-index for ranking predictions
+#'  for survival predictions and Uno's C-index for risk predictions
 #'  (e.g. linear predictors).
 #'
 #' @return a [data.table][data.table::data.table] with the suggested survival

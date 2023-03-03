@@ -24,7 +24,7 @@ The following measures are provided via \link{mlr3proba}:
 }
 \item Calibration measures (survival \code{distr} prediction type)
 \itemize{
-\item \link[mlr3proba:mlr_measures_surv.graf]{Integrated Brier Score} (with \emph{proper = TRUE, method = 2}, estimates KM censoring distribution)
+\item \link[mlr3proba:mlr_measures_surv.graf]{Integrated Brier Score} (with \emph{proper = TRUE, method = 2}, estimates KM censoring distribution, is also a measure of discrimination)
 \item \link[mlr3proba:mlr_measures_surv.rcll]{Right-Censored Log-Loss} (proper calibration score)
 \item \link[mlr3proba:mlr_measures_surv.dcalib]{D-Calibration} (with \emph{B = 10, chisq = FALSE}, returning the measure and not the p-value)
 }
@@ -34,7 +34,7 @@ Any of the above measures \strong{can} be used for model \emph{evaluation} (but 
 on several other factors if they \strong{should} be used, e.g. censoring
 distribution, dataset size, proportion of events in the test set, etc.).
 For model \emph{optimization/tuning}, we suggest the Right-Censored Log-Loss
-for survival predictions and Uno's C-index for ranking predictions
+for survival predictions and Uno's C-index for risk predictions
 (e.g. linear predictors).
 }
 \examples{
