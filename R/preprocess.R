@@ -291,10 +291,10 @@ minimize_backend = function(task) {
 #' particular data modality, otherwise `0`.
 #' Column names should be the name of the different omics in that case.
 #'
-#' @return a [tibble][tibble] with columns:
+#' @return a [tibble][tibble] with rows different omic combinations and columns:
 #' - `omics` => list of omic names that make up the combo
 #' - `n_omics` => number of omics in the combo
-#' - `intersect_count` => number of 'patients' who have all omics in the combo
+#' - `intersect_count` => number of patients who have all omics in the combo
 #'
 #' @examples
 #' library(dplyr)

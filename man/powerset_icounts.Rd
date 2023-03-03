@@ -13,11 +13,11 @@ particular data modality, otherwise \code{0}.
 Column names should be the name of the different omics in that case.}
 }
 \value{
-a \link{tibble} with columns:
+a \link{tibble} with rows different omic combinations and columns:
 \itemize{
 \item \code{omics} => list of omic names that make up the combo
 \item \code{n_omics} => number of omics in the combo
-\item \code{intersect_count} => number of 'patients' who have all omics in the combo
+\item \code{intersect_count} => number of patients who have all omics in the combo
 }
 }
 \description{
