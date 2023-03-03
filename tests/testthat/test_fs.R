@@ -152,11 +152,11 @@ test_that('run() works', {
   expect_equal(result2, efs2$result)
 
   # eFS with aorsf
-  efs3 = eFS$new(lrn_ids = 'aorsf', nthreads_rsf = 1,
+  efs3 = eFS$new(lrn_ids = 'aorsf',
     repeats = 1, mtry_ratio = 0.8, n_features = 5)
 
   result3 = efs3$run(task = taskv, verbose = FALSE)
-  expect_equal(result3, efs3$result3)
+  expect_equal(result3, efs3$result)
 })
 
 test_that('fs_stats() works', {
