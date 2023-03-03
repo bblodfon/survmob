@@ -84,6 +84,12 @@ minimize_backend = function(task) {
 #'
 #' @export
 powerset_icounts = function(df) {
+  if (is.null(colnames(df))) {
+    stop('Provide column names')
+  }
+  if (!any(class(df) %in% c('matrix', 'data.frame'))) {
+    stop('Provide matrix or data.frame-like object')
+  }
   omic_names = colnames(df)
 
   powerset = lapply(1:length(omic_names), combinat::combn, x = omic_names,

@@ -197,23 +197,3 @@ test_that('initialization with po (PipeOp) shorthand constructor works', {
   expect_equal(polog$param_set$values$base, exp(1))
   expect_equal(polog$param_set$values$offset, 1)
 })
-
-test_that('minimize_backend works', {
-  task = tsk('lung')
-
-  pona = PipeOpRemoveNAs$new(param_vals = list(cutoff = 0))
-  task1 = pona$train(list(task))[[1L]]
-  expect_equal(length(task1$feature_names), 2)
-
-  # backend hasn't changed!
-  expect_equal(task1$backend$ncol, 11) # 8 feats, 2 targets (time+status) + row_id
-  expect_equal(task1$backend$nrow, 228)
-
-  # now it is
-  task2 = minimize_backend(task1)
-  expect_equal(task2$backend$ncol, 5) # 2 feats, 2 targets (time+status) + row_id
-  expect_equal(task2$backend$nrow, 228)
-
-  # original task didn't change
-  expect_equal(task1$backend$ncol, 11)
-})

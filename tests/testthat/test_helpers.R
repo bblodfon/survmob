@@ -27,7 +27,7 @@ test_that('task_powerset() works', {
   expect_equal(length(powset), 2^3 - 1)
   # all features are included
   expect_equal(powset[['task1-task3']]$feature_names,
-               c(task1$feature_names, task3$feature_names))
+    c(task1$feature_names, task3$feature_names))
 
   # check 2-element list
   powset2 = task_powerset(tasks[1:2])
@@ -38,4 +38,24 @@ test_that('task_powerset() works', {
   powset1 = task_powerset(tasks[1])
   expect_equal(length(powset1), 1)
   expect_equal(names(powset1), task1$id)
+})
+
+test_that('minimize_backend works', {
+  task = tsk('lung')
+
+  pona = PipeOpRemoveNAs$new(param_vals = list(cutoff = 0))
+  task1 = pona$train(list(task))[[1L]]
+  expect_equal(length(task1$feature_names), 2)
+
+  # backend hasn't changed!
+  expect_equal(task1$backend$ncol, 11) # 8 feats, 2 targets (time+status) + row_id
+  expect_equal(task1$backend$nrow, 228)
+
+  # now it is
+  task2 = minimize_backend(task1)
+  expect_equal(task2$backend$ncol, 5) # 2 feats, 2 targets (time+status) + row_id
+  expect_equal(task2$backend$nrow, 228)
+
+  # original task didn't change
+  expect_equal(task1$backend$ncol, 11)
 })
