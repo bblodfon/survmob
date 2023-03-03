@@ -39,7 +39,7 @@
 #' dt
 #'
 #' @export
-SurvLPS = R6::R6Class('SurvLPS',
+SurvLPS = R6Class('SurvLPS',
   public = list(
     #' @field nthreads_rsf (`int(1)`)\cr
     #' Number of cores to use in the random forest survival learners
@@ -73,7 +73,7 @@ SurvLPS = R6::R6Class('SurvLPS',
     initialize = function(ids          = NULL,
                           nthreads_rsf = unname(parallelly::availableCores()),
                           nthreads_xgb = 1) {
-      lrn_ids = self$lrn_ids()
+      lrn_ids = self$supported_lrn_ids()
 
       if (!is.null(ids)) {
         lrn_ids = lrn_ids[lrn_ids %in% ids]
@@ -84,11 +84,20 @@ SurvLPS = R6::R6Class('SurvLPS',
       self$nthreads_xgb = nthreads_xgb
     },
 
-    #' @description Survival Learners IDs
+    #' @description Supported Survival Learners IDs
     #' @return (`character()`)\cr
     #' A vector of ALL available survival learner ids
-    lrn_ids = function() {
+    supported_lrn_ids = function() {
       private$.lrn_ids
+    },
+
+    #' @description Survival Learners IDs
+    #' @return (`character()`)\cr
+    #' A subset of the available survival learner ids that will be used in
+    #' functions `lrns()` and `lrn_tbl()` (filtered by the user upon
+    #' initialization)
+    lrn_ids = function() {
+      private$.ids
     },
 
     #' @description Survival learners table
@@ -407,7 +416,7 @@ SurvLPS = R6::R6Class('SurvLPS',
     #' @description
     #' Opens the help page for this object.
     help = function() {
-      mlr3misc::open_help("survmob::SurvLPS")
+      mlr3misc::open_help('survmob::SurvLPS')
     }
   ), private = list(
     # Learner ids
