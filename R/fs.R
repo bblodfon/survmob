@@ -661,6 +661,12 @@ eFS = R6Class('EnsembleFeatureSelection',
       }
 
       p
+    },
+
+    #' @description
+    #' Opens the help page for this object.
+    help = function() {
+      mlr3misc::open_help('survmob::eFS')
     }
   ),
   private = list(
@@ -707,7 +713,7 @@ eFS = R6Class('EnsembleFeatureSelection',
   )
 )
 
-#' @title Subset task class
+#' @title Subset tasks class
 #'
 #' @description Subset (survival) tasks to the most stable features identified
 #' by the ensemble feature approach ([eFS]).
@@ -920,6 +926,12 @@ tskSub = R6Class('FSTaskSubsettor',
 
         minimize_backend(task$clone()$select(cols = features))
       })
+    },
+
+    #' @description
+    #' Opens the help page for this object.
+    help = function() {
+      mlr3misc::open_help('survmob::tskSub')
     }
   ),
   private = list(
