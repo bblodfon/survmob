@@ -38,8 +38,10 @@ test_that('SurvLPS works as expected', {
   expect_equal(dim(dt), c(2, 3))
 
   # test some RSFs
-  s = SurvLPS$new(nthreads_rsf = 5, ids = c('rsf_maxstat', 'rsf_logrank',
-    'rsf_cindex', 'rsf_extratrees', 'aorsf'))
+  rsf_lrn_ids = c('rsf_maxstat', 'rsf_logrank', 'rsf_cindex', 'rsf_extratrees',
+    'aorsf')
+  s = SurvLPS$new(nthreads_rsf = 5, ids = rsf_lrn_ids)
+  expect_equal(sort(s$lrn_ids()), sort(rsf_lrn_ids))
   dt = s$lrn_tbl()
   expect_equal(dim(dt), c(5, 3))
   rsf_lrn = dt[id == 'rsf_extratrees']$learner[[1]]
