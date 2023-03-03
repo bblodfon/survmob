@@ -130,6 +130,7 @@ A \link{tibble} with the results from the eFS (see \code{run()} method)}
 \item \href{#method-EnsembleFeatureSelection-stab}{\code{eFS$stab()}}
 \item \href{#method-EnsembleFeatureSelection-ffs_plot}{\code{eFS$ffs_plot()}}
 \item \href{#method-EnsembleFeatureSelection-res_plot}{\code{eFS$res_plot()}}
+\item \href{#method-EnsembleFeatureSelection-help}{\code{eFS$help()}}
 \item \href{#method-EnsembleFeatureSelection-clone}{\code{eFS$clone()}}
 }
 }
@@ -448,6 +449,16 @@ feature set is included as a comparison category. The results are ordered
 according to the values of the first metric used in \code{stab()} ('jaccard'
 by default) decided by the value of \code{stab_metrics}.
 }
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-EnsembleFeatureSelection-help"></a>}}
+\if{latex}{\out{\hypertarget{method-EnsembleFeatureSelection-help}{}}}
+\subsection{Method \code{help()}}{
+Opens the help page for this object.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{eFS$help()}\if{html}{\out{</div>}}
 }
 
 }

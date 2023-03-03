@@ -58,6 +58,7 @@ Number of cores to use in the xgboost survival learners}
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-SurvLPS-new}{\code{SurvLPS$new()}}
+\item \href{#method-SurvLPS-supported_lrn_ids}{\code{SurvLPS$supported_lrn_ids()}}
 \item \href{#method-SurvLPS-lrn_ids}{\code{SurvLPS$lrn_ids()}}
 \item \href{#method-SurvLPS-lrn_tbl}{\code{SurvLPS$lrn_tbl()}}
 \item \href{#method-SurvLPS-lrns}{\code{SurvLPS$lrns()}}
@@ -109,6 +110,20 @@ might create performance issues, so test before you use too many \code{nthreads_
 
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-SurvLPS-supported_lrn_ids"></a>}}
+\if{latex}{\out{\hypertarget{method-SurvLPS-supported_lrn_ids}{}}}
+\subsection{Method \code{supported_lrn_ids()}}{
+Supported Survival Learners IDs
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SurvLPS$supported_lrn_ids()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+(\code{character()})\cr
+A vector of ALL available survival learner ids
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-SurvLPS-lrn_ids"></a>}}
 \if{latex}{\out{\hypertarget{method-SurvLPS-lrn_ids}{}}}
 \subsection{Method \code{lrn_ids()}}{
@@ -119,7 +134,9 @@ Survival Learners IDs
 
 \subsection{Returns}{
 (\code{character()})\cr
-A vector of ALL available survival learner ids
+A subset of the available survival learner ids that will be used in
+functions \code{lrns()} and \code{lrn_tbl()} (filtered by the user upon
+initialization)
 }
 }
 \if{html}{\out{<hr>}}

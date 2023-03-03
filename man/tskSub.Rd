@@ -2,7 +2,7 @@
 % Please edit documentation in R/fs.R
 \name{tskSub}
 \alias{tskSub}
-\title{Subset task class}
+\title{Subset tasks class}
 \description{
 Subset (survival) tasks to the most stable features identified
 by the ensemble feature approach (\link{eFS}).
@@ -33,6 +33,7 @@ Max #features}
 \item \href{#method-FSTaskSubsettor-new}{\code{tskSub$new()}}
 \item \href{#method-FSTaskSubsettor-summary_stats}{\code{tskSub$summary_stats()}}
 \item \href{#method-FSTaskSubsettor-subset_tasks}{\code{tskSub$subset_tasks()}}
+\item \href{#method-FSTaskSubsettor-help}{\code{tskSub$help()}}
 \item \href{#method-FSTaskSubsettor-clone}{\code{tskSub$clone()}}
 }
 }
@@ -169,6 +170,16 @@ frequently selected features based on the consensus eFS results
 (how many features is decided by the \code{method} and the result of
 \code{summary_stats()})
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-FSTaskSubsettor-help"></a>}}
+\if{latex}{\out{\hypertarget{method-FSTaskSubsettor-help}{}}}
+\subsection{Method \code{help()}}{
+Opens the help page for this object.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{tskSub$help()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-FSTaskSubsettor-clone"></a>}}
