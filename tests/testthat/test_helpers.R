@@ -1,4 +1,4 @@
-test_that('task_powerset() works', {
+test_that('task_powerset works', {
   # generate 3 survival tasks
   gen = mlr3::mlr_task_generators$get('simsurv')
   task1 = gen$generate(5)
@@ -58,4 +58,25 @@ test_that('minimize_backend works', {
 
   # original task didn't change
   expect_equal(task1$backend$ncol, 11)
+})
+
+test_that('powerset_icounts works', {
+  # need matrix or data.frame
+  expect_error(powerset_icounts(3))
+  # test matrix
+  m = matrix(data = c(1,0,1, 1,1,1, 1,0,0), nrow = 3, byrow = TRUE)
+  # no column names
+  expect_error(powerset_icounts(m))
+
+  colnames(m) = LETTERS[1:3]
+  pics = powerset_icounts(m)
+
+  expect_equal(nrow(pics), 2^ncol(m)-1)
+  expect_equal(pics %>% filter(combo_name == 'A') %>% pull(intersect_count), 3)
+  expect_equal(pics %>% filter(combo_name == 'B') %>% pull(intersect_count), 1)
+  expect_equal(pics %>% filter(combo_name == 'C') %>% pull(intersect_count), 2)
+  expect_equal(pics %>% filter(combo_name == 'A-B') %>% pull(intersect_count), 1)
+  expect_equal(pics %>% filter(combo_name == 'B-C') %>% pull(intersect_count), 1)
+  expect_equal(pics %>% filter(combo_name == 'A-C') %>% pull(intersect_count), 2)
+  expect_equal(pics %>% filter(combo_name == 'A-B-C') %>% pull(intersect_count), 1)
 })

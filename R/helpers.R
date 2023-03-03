@@ -54,19 +54,21 @@ minimize_backend = function(task) {
   )
 }
 
-#' @title Powerset intersect counts
+#' @title Powerset intersection counts
 #'
 #' @description Use on a 0/1 matrix, where e.g. rows are patients and columns
 #' are different data modalities (omics).
 #' This function will return for all possible combination of omics,
-#' the number of patients that have information on ALL these omics (intersection).
+#' the number of patients that have information on **ALL** these omics
+#' (intersection counts).
 #'
-#' @param `df` A 0/1 [data.frame][data.frame] or [matrix][matrix].
+#' @param df A 0/1 [data.frame][data.frame] or [matrix][matrix].
 #' E.g. a (patient, omic) has a value of `1` if the specific patient has that
 #' particular data modality, otherwise `0`.
 #' Column names should be the name of the different omics in that case.
 #'
 #' @return a [tibble][tibble] with rows different omic combinations and columns:
+#' - `combo_name` => collapsed omic name (hyphen '-' is used for concatenation)
 #' - `omics` => list of omic names that make up the combo
 #' - `n_omics` => number of omics in the combo
 #' - `intersect_count` => number of patients who have all omics in the combo
@@ -84,12 +86,14 @@ minimize_backend = function(task) {
 #'
 #' @export
 powerset_icounts = function(df) {
-  if (is.null(colnames(df))) {
-    stop('Provide column names')
-  }
   if (!any(class(df) %in% c('matrix', 'data.frame'))) {
     stop('Provide matrix or data.frame-like object')
   }
+
+  if (is.null(colnames(df))) {
+    stop('Provide column names')
+  }
+
   omic_names = colnames(df)
 
   powerset = lapply(1:length(omic_names), combinat::combn, x = omic_names,
@@ -97,17 +101,19 @@ powerset_icounts = function(df) {
 
   d = list()
   for (index in 1:length(powerset)) {
-    as = powerset[[index]]
-    n_omics = length(as)
+    omic_combo = powerset[[index]]
+    n_omics = length(omic_combo)
+    combo_name = paste0(omic_combo, collapse = '-')
 
     if (n_omics == 1) {
-      intersect_count = sum(df[,as])
+      intersect_count = sum(df[,omic_combo])
     } else {
-      intersect_count = sum(rowSums(df[,as]) == length(as))
+      intersect_count = sum(rowSums(df[,omic_combo]) == n_omics)
     }
 
     d[[index]] = tibble::tibble(
-      omic_combo = list(as),
+      combo_name = combo_name,
+      omic_combo = list(omic_combo),
       n_omics = n_omics,
       intersect_count = intersect_count
     )
