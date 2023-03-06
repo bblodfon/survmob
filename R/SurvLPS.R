@@ -329,7 +329,9 @@ SurvLPS = R6Class('SurvLPS',
         } else if (lrn_id == 'aorsf') {
           paradox::ps(
             n_tree = p_int(100, 1500),
-            mtry_ratio = p_dbl(0.1, 0.9),
+            # https://github.com/ropensci/aorsf/issues/16#issuecomment-1453730654
+            # don't tune `mtry` as it changes per node
+            # mtry_ratio = p_dbl(0.1, 0.9),
             leaf_min_obs = p_int(3, 20)
           )
         } else if (lrn_id == 'coxboost') { # CoxBoost

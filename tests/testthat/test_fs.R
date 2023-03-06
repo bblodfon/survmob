@@ -10,12 +10,10 @@ test_that('eFS is initialized properly', {
   expect_equal(efs$repeats, 100)
   expect_equal(efs$feature_fraction, 0.8)
   expect_equal(efs$n_features, 2)
-  expect_true(efs$adaptive_mr)
 
   # RSF parameters
   expect_equal(efs$nthreads_rsf, 7)
   expect_equal(efs$num_trees, 250)
-  expect_equal(efs$mtry_ratio, 0.05)
 
   # errors
   expect_error(efs$new(msr_id = 'NotProperMeasure'))
@@ -25,7 +23,7 @@ test_that('eFS is initialized properly', {
   expect_error(eFS$new(feature_fraction = 1)) # must be less than 1 strictly
   expect_error(eFS$new(num_trees = 0))
   expect_error(eFS$new(nthreads_rsf = 0))
-  expect_error(eFS$new(mtry_ratio = 1.2))
+  expect_error(eFS$new(mtry_ratio = 1.2)) # unused argument
 
   # warnings
   expect_warning(eFS$new(msr_id = 'oob_error', resampling = rsmp('cv')))
@@ -45,16 +43,10 @@ test_that('rfe_info() works properly', {
   tbl2 = efs2$rfe_info(taskv)
   expect_equal(tbl2$subset_size, c(9,4,2,1))
 
-  efs3 = eFS$new(feature_fraction = 0.9, n_features = 1, mtry_ratio = 0.5)
+  efs3 = eFS$new(feature_fraction = 0.9, n_features = 1)
   tbl3 = efs3$rfe_info(taskv)
   expect_equal(tbl3$subset_size, rev(1:9))
-  expect_equal(tbl3$mtry_ratio[1], 0.5)
-  expect_equal(tbl3$mtry_ratio[9], 1) # `mtry_ratio` increases
-
-  efs3$adaptive_mr = FALSE
-  tbl4 = efs3$rfe_info(taskv)
-  expect_equal(tbl4$subset_size, rev(1:9))
-  expect_equal(tbl4$mtry_ratio, rep(0.5, 9)) # `mtry_ratio` doesn't change
+  expect_equal(tbl3$mtry, ceiling(sqrt(tbl3$subset_size))) # `mtry` decreases (sqrt)
 })
 
 test_that('RSF learners and ids are properly initialized', {
@@ -81,10 +73,6 @@ test_that('RSF learners and ids are properly initialized', {
   expect_equal(rsf_lrns$rsf_extratrees$param_set$values$num.trees, 250)
   expect_equal(rsf_lrns$aorsf$param_set$values$n_tree, 250)
 
-  expect_equal(rsf_lrns$rsf_cindex$param_set$values$mtry.ratio, 0.05)
-  expect_equal(rsf_lrns$rsf_extratrees$param_set$values$mtry.ratio, 0.05)
-  expect_equal(rsf_lrns$aorsf$param_set$values$mtry_ratio, 0.05)
-
   expect_equal(rsf_lrns$rsf_cindex$param_set$values$min.node.size, 3)
   expect_equal(rsf_lrns$rsf_extratrees$param_set$values$min.node.size, 3)
   expect_equal(rsf_lrns$aorsf$param_set$values$leaf_min_obs, 3)
@@ -93,6 +81,7 @@ test_that('RSF learners and ids are properly initialized', {
   expect_equal(rsf_lrns$rsf_extratrees$param_set$values$importance, 'permutation')
   expect_equal(rsf_lrns$aorsf$param_set$values$importance, 'anova')
 
+  # check properties: all RSFs should have `importance` and `oob_error`
   for (rsf_lrn in rsf_lrns) {
     expect_true(all(c('importance', 'oob_error') %in% rsf_lrn$properties))
   }
@@ -100,7 +89,7 @@ test_that('RSF learners and ids are properly initialized', {
 
 test_that('run() works', {
   efs = eFS$new(lrn_ids = 'rsf_extratrees', nthreads_rsf = 1,
-    n_features = 5, mtry_ratio = 0.5, repeats = 1
+    n_features = 1, feature_fraction = 0.6, repeats = 1
   )
   expect_null(efs$result)
   expect_null(efs$task_id)
@@ -117,14 +106,14 @@ test_that('run() works', {
   expect_equal(colnames(result), c('lrn_id', 'iter', 'selected_features',
                                    'nfeatures', 'score', 'archive'))
 
-  # check subset_sizes and adaptive mtry.ratio is correct
+  # RFE: check subset_size and mtry are correct
   arch = efs$result$archive[[1]]
   rfe_tbl = efs$rfe_info(taskv)
   subset_sizes = unlist(lapply(as.data.table(arch)$importance, length))
-  mtry_ratios = unlist(mlr3misc::map(as.data.table(arch)$resample_result,
-    function(rr) rr$learner$param_set$values$mtry.ratio))
+  mtrys = unlist(mlr3misc::map(as.data.table(arch)$resample_result,
+    function(rr) rr$learners[[1]]$model$mtry))
   expect_equal(rfe_tbl$subset_size, subset_sizes)
-  expect_equal(rfe_tbl$mtry_ratio, mtry_ratios)
+  expect_equal(rfe_tbl$mtry, mtrys)
 
   # check that the smallest oob_error is actually selected
   dt = as.data.table(arch)
@@ -141,7 +130,7 @@ test_that('run() works', {
   # eFS with RCLL measure
   efs2 = eFS$new(lrn_ids = 'rsf_extratrees', nthreads_rsf = 1,
     msr_id = 'rcll', resampling = rsmp('cv', folds = 3),
-    repeats = 1, mtry_ratio = 0.8, n_features = 5)
+    repeats = 1, n_features = 5)
 
   # check that msr_id and resampling are different
   expect_equal(efs2$msr_id, 'rcll')
@@ -152,8 +141,7 @@ test_that('run() works', {
   expect_equal(result2, efs2$result)
 
   # eFS with aorsf
-  efs3 = eFS$new(lrn_ids = 'aorsf',
-    repeats = 1, mtry_ratio = 0.8, n_features = 5)
+  efs3 = eFS$new(lrn_ids = 'aorsf', repeats = 1, n_features = 5)
 
   result3 = efs3$run(task = taskv, verbose = FALSE)
   expect_equal(result3, efs3$result)

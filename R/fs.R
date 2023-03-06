@@ -35,10 +35,10 @@
 #'
 #' # create eFS object
 #' efs = eFS$new(lrn_ids = c('rsf_logrank', 'rsf_cindex'), nthreads_rsf = 2,
-#'   feature_fraction = 0.6, n_features = 1, mtry_ratio = 0.5, repeats = 3
+#'   feature_fraction = 0.6, n_features = 1, repeats = 3
 #' )
 #'
-#' # useful info for RFE (adaptive mtry.ratio, subset sizes)
+#' # useful info for RFE (feature subset sizes, mtry used)
 #' efs$rfe_info(task)
 #'
 #' # Execute ensemble feature selection
@@ -111,15 +111,6 @@ eFS = R6Class('EnsembleFeatureSelection',
     #' Number of trees to use in the random forest survival learners
     num_trees = NULL,
 
-    #' @field mtry_ratio (`double(1)`)\cr
-    #' Percentage of features to try at each node split (should be between 0
-    #' and 1)
-    mtry_ratio = NULL,
-
-    #' @field adaptive_mr (`logical(1)`)\cr
-    #' Whether to have an adaptive `mtry_ratio` or not in the RFE algorithm
-    adaptive_mr = NULL,
-
     #' @field result (`tibble`)\cr
     #' A [tibble] with the results from the eFS (see `run()` method)
     result = NULL,
@@ -143,7 +134,7 @@ eFS = R6Class('EnsembleFeatureSelection',
     #'
     #' @param resampling [Resampling][mlr3::Resampling] for the
     #' [AutoFSelector][mlr3fselect::AutoFSelector].
-    #' Default resampling [insample][mlr3::ResamplingInsample].
+    #' Default resampling is [insample][mlr3::ResamplingInsample].
     #'
     #' @param repeats Number of times to run the RFE algorithm on each RSF
     #' learner. Defaults to 100.
@@ -162,47 +153,27 @@ eFS = R6Class('EnsembleFeatureSelection',
     #' @param num_trees Number of trees to use in the random forest survival
     #' learners. Defaults to 250.
     #'
-    #' @param mtry_ratio Percentage of features to try at each tree node split
-    #' (should be between 0 and 1).
-    #' Default value is 0.05 which means that 500 features will be randomly
-    #' selected in a node split, considering a dataset of 10000 features.
-    #'
-    #' @param adaptive_mr Whether to use an adaptive `mtry_ratio` or not.
-    #' Default: TRUE.
-    #'
     #' @details
     #' - By default, `msr_id` is `oob_error`:
-    #'    - Each RSF provides the (1 - Harrell's C-index) as Out-Of-Bag error
+    #'    - Each RSF provides (1 - Harrell's C-index) as Out-Of-Bag error
     #'    - An [insample resampling][mlr3::ResamplingInsample] is used in that
     #'    case in order to use all training data for bootstrapping in the RSFs.
-    #' - `adaptive_mr`:
+    #' - `mtry` used in RSFs:
     #'    - During the execution of the RFE algorithm, progressively smaller
     #'    feature subsets are used, as dictated by the `feature_fraction`
     #'    parameter.
-    #'    - Setting `adaptive_mr` to FALSE means that the same value of `mtry_ratio`
-    #'    is used, irrespective of the number of features in each subset.
-    #'    This creates the following issue: when the feature subsets get really
-    #'    smaller (e.g. less 40 features) and with an example `mtry_ratio` of
-    #'    0.05, we get only 2 features per tree node split, which results in
-    #'    extremely randomized trees.
-    #'    - Setting `adaptive_mr` to TRUE (default), the value of `mtry_ratio`
-    #'    changes in each iteration of the RFE algorithm according to the
-    #'    following formula:
-    #'    \deqn{mr^{log(s)/log(n)}}, where `mr` is the `mtry_ratio` provided
-    #'    at initialization, `subset_size` is the current number of
-    #'    features in the RFE subset and `n` is the total number of features
-    #'    in the original dataset.
-    #'    The formula results in an increase of the `mtry_ratio`s in the RSFs
-    #'    as the feature subsets selected by the RFE algorithm get smaller.
+    #'    - For each feature subset, the RSF learner tries by default
+    #'    `ceiling(sqrt(#features-in-subset))` features as candidate variables
+    #'    for splitting (`mtry`).
+    #'    So `mtry` values also get progressively smaller.
     #'    See `rfe_info()` for more details.
     initialize = function(
       lrn_ids = self$supported_lrn_ids(),
       msr_id = 'oob_error',
       resampling = mlr3::rsmp('insample'),
       repeats = 100, n_features = 2, feature_fraction = 0.8,
-      nthreads_rsf = parallelly::availableCores(), num_trees = 250,
-      mtry_ratio = 0.05, adaptive_mr = TRUE) {
-
+      nthreads_rsf = parallelly::availableCores(), num_trees = 250
+    ) {
       # learner ids
       supp_lrn_ids = self$supported_lrn_ids()
       if (!all(lrn_ids %in% supp_lrn_ids) || length(lrn_ids) == 0) {
@@ -242,11 +213,6 @@ eFS = R6Class('EnsembleFeatureSelection',
         stop('\'feature_fraction\' needs to be between 0 (inclusive) and 1
           (non-inclusive)')
 
-      if (is.logical(adaptive_mr))
-        self$adaptive_mr = adaptive_mr
-      else
-        stop('\'adaptive_mr\' can only be TRUE or FALSE')
-
       # RSF parameters
       if (nthreads_rsf > 0)
         self$nthreads_rsf = nthreads_rsf
@@ -257,11 +223,6 @@ eFS = R6Class('EnsembleFeatureSelection',
         self$num_trees = num_trees
       else
         stop('\'num_trees\' needs to be larger than 0')
-
-      if (mtry_ratio >= 0 && mtry_ratio <= 1)
-        self$mtry_ratio = mtry_ratio
-      else
-        stop('\'mtry_ratio\' needs to be between 0 and 1')
     },
 
     #' @description Returns a vector of internal ids corresponding to the
@@ -273,10 +234,10 @@ eFS = R6Class('EnsembleFeatureSelection',
     },
 
     #' @description Returns the feature subset sizes that the RFE algorithm
-    #' will use and the corresponding `mtry_ratio` and `mtry` values for the
+    #' will use and the corresponding `mtry` values for the
     #' RSF learners.
     #' These depend on the total number of features of the given task,
-    #' as well as the `n_features`, `feature_fraction` and `adaptive_mr`
+    #' as well as the `n_features` and `feature_fraction`
     #' parameters (initialized upon class construction).
     #'
     #' @details
@@ -285,40 +246,32 @@ eFS = R6Class('EnsembleFeatureSelection',
     #' (see `rfe_subsets()` function, `ml3fselect` v0.10.0).
     #'
     #' @param task [mlr3::Task]
-    #' @return a [tibble] with columns `subset_size`, `mtry_ratio` and `mtry`
+    #' @return a [tibble] with columns `subset_size` and `mtry`
     rfe_info = function(task) {
       n = length(task$feature_names) # number of total features
       n_features = self$n_features
       feature_fraction = self$feature_fraction
-      mr = self$mtry_ratio
 
       subset_sizes = unique(floor(cumprod(
         c(n, rep(feature_fraction, log(n_features / n) / log(feature_fraction))))
       ))
 
-      dt = tibble(subset_size = subset_sizes)
-      if (self$adaptive_mr) {
-        dt = dt %>% mutate(mtry_ratio = mr^(log(subset_size)/log(n)))
-      } else {
-        dt = dt %>% mutate(mtry_ratio = mr)
-      }
-
-      dt = dt %>% mutate(mtry = ceiling(mtry_ratio * subset_size))
-
-      dt
+      tibble(subset_size = subset_sizes) %>%
+        mutate(mtry = ceiling(sqrt(subset_size)))
     },
 
     #' @description Runs the ensemble feature selection on the given task.
     #'
     #' @details For every RSF learner, we run `repeats` times the RFE algorithm
     #' using a properly constructed [AutoFSelector][mlr3fselect::AutoFSelector]).
-    #' From each `repeat`ition we get the best feature subset.
+    #' From each `repeat`-ition we get the best feature subset.
     #' The aggregated result is invisibly returned as a tibble and is available
     #' also in the `result` field of this object.
     #'
     #' @param task [TaskSurv][mlr3proba::TaskSurv]
     #' @param verbose Write log messages or not? Default: TRUE.
-    #' @param store_archive Whether to also store the [ArchiveFSelect][mlr3fselect::ArchiveFSelect]
+    #' @param store_archive Whether to also store the
+    #' [ArchiveFSelect][mlr3fselect::ArchiveFSelect]
     #' archive object created by `AutoFSelector`, for debugging purposes.
     #' Default: FALSE.
     #'
@@ -338,30 +291,6 @@ eFS = R6Class('EnsembleFeatureSelection',
 
       # RSF learners
       learners = private$.get_lrns()
-
-      # mtry_ratio callback
-      mr = self$mtry_ratio
-      n = length(task$feature_names) # total #features
-
-      if (self$adaptive_mr) {
-        mr_clbk = callback_fselect(id = 'mtry',
-          on_eval_after_design = function(callback, context) {
-            # #features in RFE subset
-            nfeats = length(context$design$task[[1]]$feature_names)
-
-            # adaptive mtry.ratio formula
-            mtry.ratio = mr^(log(nfeats)/log(n))
-
-            learner = context$design$learner[[1]]
-            if (startsWith(x = learner$id, prefix = 'Oblique')) {
-              learner$param_set$set_values(mtry_ratio = mtry.ratio)
-            } else {
-              learner$param_set$set_values(mtry.ratio = mtry.ratio)
-            }
-          })
-      } else {
-        mr_clbk = callback_fselect(id = 'empty')
-      }
 
       # performance measure
       if (self$msr_id == 'oob_error') {
@@ -401,7 +330,7 @@ eFS = R6Class('EnsembleFeatureSelection',
           terminator = trm('none'),
           fselector = fs('rfe', n_features       = self$n_features,
                                 feature_fraction = self$feature_fraction),
-          callbacks = mr_clbk
+          store_models = store_archive # hacked :)
         )
 
         at$train(task)
@@ -681,7 +610,6 @@ eFS = R6Class('EnsembleFeatureSelection',
       # Apply the following parameter list to each RSF learner (ranger)
       param_list = list(
         num.trees = self$num_trees,
-        mtry.ratio = self$mtry_ratio,
         min.node.size = 3, # default for survival (RSF)
         importance = 'permutation' # don't expose it to the user (yet)
       )
@@ -689,7 +617,6 @@ eFS = R6Class('EnsembleFeatureSelection',
       # Apply the following parameter list to each Oblique RSF learner
       param_list_oblique = list(
         n_tree = self$num_trees,
-        mtry_ratio = self$mtry_ratio,
         leaf_min_obs = 3, # default for survival (RSF)
         importance = 'anova',
         attach_data = TRUE # needed for importance

@@ -39,10 +39,10 @@ eFS$new()$supported_lrn_ids()
 
 # create eFS object
 efs = eFS$new(lrn_ids = c('rsf_logrank', 'rsf_cindex'), nthreads_rsf = 2,
-  feature_fraction = 0.6, n_features = 1, mtry_ratio = 0.5, repeats = 3
+  feature_fraction = 0.6, n_features = 1, repeats = 3
 )
 
-# useful info for RFE (adaptive mtry.ratio, subset sizes)
+# useful info for RFE (feature subset sizes, mtry used)
 efs$rfe_info(task)
 
 # Execute ensemble feature selection
@@ -107,13 +107,6 @@ Number of cores to use in the random forest survival learners}
 \item{\code{num_trees}}{(\code{int(1)})\cr
 Number of trees to use in the random forest survival learners}
 
-\item{\code{mtry_ratio}}{(\code{double(1)})\cr
-Percentage of features to try at each node split (should be between 0
-and 1)}
-
-\item{\code{adaptive_mr}}{(\code{logical(1)})\cr
-Whether to have an adaptive \code{mtry_ratio} or not in the RFE algorithm}
-
 \item{\code{result}}{(\code{tibble})\cr
 A \link{tibble} with the results from the eFS (see \code{run()} method)}
 }
@@ -148,9 +141,7 @@ Creates a new instance of this \link[R6:R6Class]{R6} class.
   n_features = 2,
   feature_fraction = 0.8,
   nthreads_rsf = parallelly::availableCores(),
-  num_trees = 250,
-  mtry_ratio = 0.05,
-  adaptive_mr = TRUE
+  num_trees = 250
 )}\if{html}{\out{</div>}}
 }
 
@@ -174,7 +165,7 @@ Default is 'oob_error'.}
 
 \item{\code{resampling}}{\link[mlr3:Resampling]{Resampling} for the
 \link[mlr3fselect:AutoFSelector]{AutoFSelector}.
-Default resampling \link[mlr3:mlr_resamplings_insample]{insample}.}
+Default resampling is \link[mlr3:mlr_resamplings_insample]{insample}.}
 
 \item{\code{repeats}}{Number of times to run the RFE algorithm on each RSF
 learner. Defaults to 100.}
@@ -192,14 +183,6 @@ the implicit parallelization of the RSF learners.}
 
 \item{\code{num_trees}}{Number of trees to use in the random forest survival
 learners. Defaults to 250.}
-
-\item{\code{mtry_ratio}}{Percentage of features to try at each tree node split
-(should be between 0 and 1).
-Default value is 0.05 which means that 500 features will be randomly
-selected in a node split, considering a dataset of 10000 features.}
-
-\item{\code{adaptive_mr}}{Whether to use an adaptive \code{mtry_ratio} or not.
-Default: TRUE.}
 }
 \if{html}{\out{</div>}}
 }
@@ -207,30 +190,19 @@ Default: TRUE.}
 \itemize{
 \item By default, \code{msr_id} is \code{oob_error}:
 \itemize{
-\item Each RSF provides the (1 - Harrell's C-index) as Out-Of-Bag error
+\item Each RSF provides (1 - Harrell's C-index) as Out-Of-Bag error
 \item An \link[mlr3:mlr_resamplings_insample]{insample resampling} is used in that
 case in order to use all training data for bootstrapping in the RSFs.
 }
-\item \code{adaptive_mr}:
+\item \code{mtry} used in RSFs:
 \itemize{
 \item During the execution of the RFE algorithm, progressively smaller
 feature subsets are used, as dictated by the \code{feature_fraction}
 parameter.
-\item Setting \code{adaptive_mr} to FALSE means that the same value of \code{mtry_ratio}
-is used, irrespective of the number of features in each subset.
-This creates the following issue: when the feature subsets get really
-smaller (e.g. less 40 features) and with an example \code{mtry_ratio} of
-0.05, we get only 2 features per tree node split, which results in
-extremely randomized trees.
-\item Setting \code{adaptive_mr} to TRUE (default), the value of \code{mtry_ratio}
-changes in each iteration of the RFE algorithm according to the
-following formula:
-\deqn{mr^{log(s)/log(n)}}, where \code{mr} is the \code{mtry_ratio} provided
-at initialization, \code{subset_size} is the current number of
-features in the RFE subset and \code{n} is the total number of features
-in the original dataset.
-The formula results in an increase of the \code{mtry_ratio}s in the RSFs
-as the feature subsets selected by the RFE algorithm get smaller.
+\item For each feature subset, the RSF learner tries by default
+\verb{ceiling(sqrt(#features-in-subset))} features as candidate variables
+for splitting (\code{mtry}).
+So \code{mtry} values also get progressively smaller.
 See \code{rfe_info()} for more details.
 }
 }
@@ -253,10 +225,10 @@ random survival forest learners that can be used in method \code{run()}
 \if{latex}{\out{\hypertarget{method-EnsembleFeatureSelection-rfe_info}{}}}
 \subsection{Method \code{rfe_info()}}{
 Returns the feature subset sizes that the RFE algorithm
-will use and the corresponding \code{mtry_ratio} and \code{mtry} values for the
+will use and the corresponding \code{mtry} values for the
 RSF learners.
 These depend on the total number of features of the given task,
-as well as the \code{n_features}, \code{feature_fraction} and \code{adaptive_mr}
+as well as the \code{n_features} and \code{feature_fraction}
 parameters (initialized upon class construction).
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{eFS$rfe_info(task)}\if{html}{\out{</div>}}
@@ -276,7 +248,7 @@ The subset sizes are calculated from the respective
 }
 
 \subsection{Returns}{
-a \link{tibble} with columns \code{subset_size}, \code{mtry_ratio} and \code{mtry}
+a \link{tibble} with columns \code{subset_size} and \code{mtry}
 }
 }
 \if{html}{\out{<hr>}}
@@ -295,7 +267,8 @@ Runs the ensemble feature selection on the given task.
 
 \item{\code{verbose}}{Write log messages or not? Default: TRUE.}
 
-\item{\code{store_archive}}{Whether to also store the \link[mlr3fselect:ArchiveFSelect]{ArchiveFSelect}
+\item{\code{store_archive}}{Whether to also store the
+\link[mlr3fselect:ArchiveFSelect]{ArchiveFSelect}
 archive object created by \code{AutoFSelector}, for debugging purposes.
 Default: FALSE.}
 }
@@ -304,7 +277,7 @@ Default: FALSE.}
 \subsection{Details}{
 For every RSF learner, we run \code{repeats} times the RFE algorithm
 using a properly constructed \link[mlr3fselect:AutoFSelector]{AutoFSelector}).
-From each \code{repeat}ition we get the best feature subset.
+From each \code{repeat}-ition we get the best feature subset.
 The aggregated result is invisibly returned as a tibble and is available
 also in the \code{result} field of this object.
 }
