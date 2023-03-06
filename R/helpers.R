@@ -10,21 +10,54 @@
 #' - Same number of observations/rows
 #'
 #' @param `tasks` list of [mlr3::Task]s
+#' @param `check_targets` logical (Default: TRUE).
+#' Check if target columns have the same values (same target names is by
+#' default checked).
 #'
 #' @export
-task_powerset = function(tasks) {
-  po_featureunion = mlr3pipelines::po('featureunion')
+task_powerset = function(tasks, check_targets = TRUE) {
+  # at least 2 tasks
+  stopifnot(length(tasks) > 1)
 
   # check that all task ids are different
   tsk_ids = mlr3misc::map_chr(tasks, `[[`, 'id')
-  stopifnot(length(unique(tsk_ids)) == length(tsk_ids))
+  if (!length(unique(tsk_ids)) == length(tsk_ids)) {
+    stop('Task ids must be different')
+  }
 
   # check that tasks have same number of rows
-  stopifnot(length(unique(mlr3misc::map_dbl(tasks, `[[`, 'nrow'))) == 1)
+  if (!length(unique(mlr3misc::map_dbl(tasks, `[[`, 'nrow'))) == 1) {
+    stop('Tasks must have the same number of rows')
+  }
+
+  # check that target names are the same
+  trg_names = mlr3misc::map_br(tasks, `[[`, 'target_names')
+  for (index in 1:ncol(trg_names)) {
+    if (!length(unique(trg_names[,index])) == 1) {
+      stop('Target names must be the same')
+    }
+  }
+
+  # check that target values (truth) are the same
+  if (check_targets) {
+    for (tsk_index in 1:(length(tasks) - 1)) {
+      truth1 = tasks[[tsk_index]]$data(
+        cols = tasks[[tsk_index]]$target_names
+      )
+      truth2 = tasks[[tsk_index + 1]]$data(
+        cols = tasks[[tsk_index + 1]]$target_names
+      )
+      # ?all.equal.data.table
+      if (!all.equal(truth1, truth2)) {
+        stop('Target values must be the same')
+      }
+    }
+  }
 
   task_subsets = lapply(1:length(tasks), combinat::combn, x = tasks,
     simplify = FALSE) %>% unlist(recursive = FALSE)
 
+  po_featureunion = mlr3pipelines::po('featureunion')
   powerset = list()
   for (task_subset in task_subsets) {
     task = po_featureunion$train(task_subset)[[1L]]
