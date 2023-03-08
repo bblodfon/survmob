@@ -216,8 +216,8 @@ test_that('stab() works', {
   expect_equal(t2$lrn_id, 'lrn')
 })
 
-test_that('tskSub works', {
-  ts = tskSub$new(nfeats = 2, cutoff = 0.7, perc = 0.2, max_nfeats = 4)
+test_that('TskSub works', {
+  ts = TskSub$new(nfeats = 2, cutoff = 0.7, perc = 0.2, max_nfeats = 4)
 
   # check initialization
   expect_equal(ts$nfeats, 2)

@@ -649,7 +649,7 @@ eFS = R6Class('EnsembleFeatureSelection',
 #' subsetting the tasks, see `subset_tasks()`.
 #'
 #' @export
-tskSub = R6Class('FSTaskSubsettor',
+TskSub = R6Class('FSTaskSubsettor',
   public = list(
     #' @field nfeats (`numeric(1)`)\cr
     #' Top N features
@@ -858,7 +858,7 @@ tskSub = R6Class('FSTaskSubsettor',
     #' @description
     #' Opens the help page for this object.
     help = function() {
-      mlr3misc::open_help('survmob::tskSub')
+      mlr3misc::open_help('survmob::TskSub')
     }
   ),
   private = list(
