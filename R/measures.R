@@ -32,25 +32,28 @@ bench_msrs = function() {
   # Harrell's C-index
   harrell_c = msr('surv.cindex')
   harrell_c$label = 'HarrellC'
-  harrell_c$id = 'surv.cindex.harrell'
+  harrell_c$id = 'harrell_c'
 
   # Uno's C-index
   uno_c = msr('surv.cindex', weight_meth = 'G2')
   uno_c$label = 'UnoC'
-  uno_c$id = 'surv.cindex.uno'
+  uno_c$id = 'uno_c'
 
   # Integrated Brier Score (with proper = TRUE, method = 2)
   ibrier = msr('surv.graf')
   ibrier$label = 'IBrier'
+  ibrier$id = 'ibrier'
   ibrier$param_set$values$proper = TRUE
 
   # Right-Censored Log-Loss
   rcll = msr('surv.rcll')
   rcll$label = 'RCLL'
+  rcll$id = 'rcll'
 
   # D-calibration
   dcal = msr('surv.dcalib', B = 10, chisq = FALSE)
   dcal$label = 'Dcal'
+  dcal$id = 'dcal'
 
   data.table(
     id      = c('harrell_c', 'uno_c', 'ibrier', 'rcll', 'dcal'),
