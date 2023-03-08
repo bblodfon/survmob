@@ -4,19 +4,43 @@
 \alias{task_powerset}
 \title{Create task powerset}
 \usage{
-task_powerset(tasks)
+task_powerset(tasks, check_targets = TRUE)
 }
 \arguments{
-\item{`tasks`}{list of \link[mlr3:Task]{mlr3::Task}s}
+\item{tasks}{list of \link[mlr3:Task]{Tasks}}
+
+\item{check_targets}{logical (Default: TRUE).
+Check if target columns have the same values (same target names is by
+default checked).}
 }
 \description{
 Given a list of \link[mlr3:Task]{tasks}, this function produces the
 set (list) of all possible combinations of tasks (powerset), combining their
-respective features via \link[mlr3pipelines:mlr_pipeops_featureunion]{mlr3pipelines::mlr_pipeops_featureunion}.
+respective features via
+\link[mlr3pipelines:mlr_pipeops_featureunion]{mlr_pipeops_featureunion}.
 Every task in the given list must have:
 \itemize{
 \item \strong{Different feature names and task ids}
 \item Same target names (target columns only from the first task are kept)
 \item Same number of observations/rows
 }
+}
+\examples{
+library(mlr3proba)
+
+# toy data
+time  = 1:5
+status = c(1,1,0,0,1)
+d1 = data.frame(status = status, time = time, a1 = LETTERS[1:5], b1 = rep(1,5))
+d2 = data.frame(status = status, time = time, a2 = LETTERS[1:5], b2 = rep(1,5))
+d3 = data.frame(status = status, time = time, a3 = LETTERS[1:5], b3 = rep(1,5))
+
+ # survival tasks
+task1 = as_task_surv(x = d1, time = 'time', event = 'status')
+task2 = as_task_surv(x = d2, time = 'time', event = 'status')
+task3 = as_task_surv(x = d3, time = 'time', event = 'status')
+tasks = list(task1, task2, task3)
+powset = task_powerset(tasks)
+powset
+
 }

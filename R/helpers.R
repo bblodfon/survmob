@@ -2,17 +2,36 @@
 #'
 #' @description Given a list of [tasks][mlr3::Task], this function produces the
 #' set (list) of all possible combinations of tasks (powerset), combining their
-#' respective features via [mlr3pipelines::mlr_pipeops_featureunion].
+#' respective features via
+#' [mlr_pipeops_featureunion][mlr3pipelines::mlr_pipeops_featureunion].
 #' Every task in the given list must have:
 #'
 #' - **Different feature names and task ids**
 #' - Same target names (target columns only from the first task are kept)
 #' - Same number of observations/rows
 #'
-#' @param `tasks` list of [mlr3::Task]s
-#' @param `check_targets` logical (Default: TRUE).
+#' @param tasks list of [Tasks][mlr3::Task]
+#' @param check_targets logical (Default: TRUE).
 #' Check if target columns have the same values (same target names is by
 #' default checked).
+#'
+#' @examples
+#' library(mlr3proba)
+#'
+#' # toy data
+#' time  = 1:5
+#' status = c(1,1,0,0,1)
+#' d1 = data.frame(status = status, time = time, a1 = LETTERS[1:5], b1 = rep(1,5))
+#' d2 = data.frame(status = status, time = time, a2 = LETTERS[1:5], b2 = rep(1,5))
+#' d3 = data.frame(status = status, time = time, a3 = LETTERS[1:5], b3 = rep(1,5))
+#'
+#'  # survival tasks
+#' task1 = as_task_surv(x = d1, time = 'time', event = 'status')
+#' task2 = as_task_surv(x = d2, time = 'time', event = 'status')
+#' task3 = as_task_surv(x = d3, time = 'time', event = 'status')
+#' tasks = list(task1, task2, task3)
+#' powset = task_powerset(tasks)
+#' powset
 #'
 #' @export
 task_powerset = function(tasks, check_targets = TRUE) {
