@@ -173,3 +173,12 @@ powerset_icounts = function(df) {
 
   dplyr::bind_rows(d)
 }
+
+# for internal use: `part` is a list with train and test indices,
+# used to split a dataset to two disjoint sets
+assert_part = function(part) {
+  stopifnot(class(part) == 'list')
+  stopifnot(length(part) == 2)
+  stopifnot(names(part) == c('train', 'test'))
+  stopifnot(length(intersect(part$train, part$test)) == 0)
+}

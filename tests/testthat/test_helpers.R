@@ -114,3 +114,10 @@ test_that('powerset_icounts works', {
   expect_equal(pics %>% filter(combo_name == 'A-C') %>% pull(intersect_count), 2)
   expect_equal(pics %>% filter(combo_name == 'A-B-C') %>% pull(intersect_count), 1)
 })
+
+test_that('assert_part works', {
+  expect_error(assert_part(list(a = 1)))
+  expect_error(assert_part(list(a = 1, b = 2)))
+  expect_error(assert_part(list(train = 1)))
+  expect_error(assert_part(list(train = 1, test = 1)))
+})
