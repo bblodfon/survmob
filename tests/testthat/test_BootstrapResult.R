@@ -29,13 +29,13 @@ test_that('BootRes works', {
   expect_equal(boot_res$task_id, 'veteran')
 
   # score ----
-  score   = boot_res$score
+  score = boot_res$score
   expect_class(score, 'tbl_df')
   expect_equal(colnames(score), bench_msrs()$id) # all measures
   expect_numeric(score$ibrier)
 
   # scores ----
-  scores  = boot_res$scores
+  scores = boot_res$scores
   expect_class(scores, 'tbl_df')
   expect_equal(colnames(scores), bench_msrs()$id) # all measures
   expect_numeric(scores$rcll)
