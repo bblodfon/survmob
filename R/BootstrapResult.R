@@ -2,6 +2,7 @@
 #'
 #' @description Use this class to measure the performance of a survival learner
 #' on a test dataset using bootstrapping.
+#' See example.
 #'
 #' @examples
 #' library(mlr3proba)
@@ -22,7 +23,7 @@
 #'
 #' # bootstrap the test set 10 times and measure performance
 #' # using all available test metrics from `bench_msrs()`
-#' # can be parallelized by increaaing `test_workers`
+#' # can be parallelized by increasing `test_workers`
 #' brs = BootRes$new(test_nrsmps = 10)
 #' brs$calculate(task = task, learner = cox, part = part)
 #'
@@ -41,25 +42,30 @@
 #' @export
 BootRes = R6Class('BootstrapResult',
   public = list(
-    #' @field task_id mpla
+    #' @field task_id Task id
     task_id = NULL,
-    #' @field lrn_id mpla
+    #' @field lrn_id Learner id
     lrn_id = NULL,
-    #' @field test_measure_ids mpla
+    #' @field test_measure_ids Measure ids
     test_measure_ids = NULL,
-    #' @field test_nrsmps mpla
+    #' @field test_nrsmps Number of bootstrapped resamplings
     test_nrsmps = NULL,
-    #' @field test_workers mpla
+    #' @field test_workers Number of workers for bootstrap parallelization
     test_workers = NULL,
-    #' @field score mpla
+    #' @field score Performance on the original test set
     score = NULL,
-    #' @field scores mpla
+    #' @field scores Performance on bootstrapped test sets
     scores = NULL,
 
-    #' @description mpla mpla
-    #' @param test_measure_ids mpla
-    #' @param test_nrsmps mpla
-    #' @param test_workers mpla
+    #' @description Creates a new instance of this [R6][R6::R6Class] class.
+    #'
+    #' @param test_measure_ids Measure ids.
+    #' Default: use all available measures from [bench_msrs()] function.
+    #' @param test_nrsmps Number of bootstrapped resamplings. Default: 1000.
+    #' @param test_workers Number of workers for bootstrap parallelization.
+    #' Default is 1 but we advise careful consideration of how many workers
+    #' to use (depends on the total number of CPUs and memory available, the
+    #' size of the dataset, the learner's memory footprint, etc.)
     initialize = function(test_measure_ids = bench_msrs()$id,
       test_nrsmps = 1000, test_workers = 1) {
       if (!all(test_measure_ids %in% bench_msrs()$id)) {
@@ -77,11 +83,21 @@ BootRes = R6Class('BootstrapResult',
       self$test_workers = test_workers
     },
 
-    #' @description Calculate bootstrapping performance scores
-    #' @param task mpla
-    #' @param learner mpla
-    #' @param part mpla
-    #' @param quiet Default: TRUE => don't report time elapsed
+    #' @description Calculate bootstrap performance scores on the test set of
+    #' the given survival task.
+    #'
+    #' @param task A [survival task][mlr3proba::TaskSurv]
+    #' @param learner A [learner][mlr3proba::LearnerSurv], **trained** on the
+    #' `part$train` set of the given task.
+    #' @param part A [partition][mlr3::partition] of the given task to train
+    #' and test sets.
+    #' @param quiet Default: TRUE (**don't** report time elapsed)
+    #'
+    #' @return (invisibly) a [tibble][tibble::tibble] (`scores`) with columns the
+    #' metrics used and rows the performance scores measured on the different
+    #' bootstrapped resamplings.
+    #' Also the performance per metric on the original test set is recorded in
+    #' the variable `score`.
     calculate = function(task, learner, part, quiet = TRUE) {
       stopifnot('`calculate()` has already been called!' = is.null(self$scores))
 
@@ -130,8 +146,12 @@ BootRes = R6Class('BootstrapResult',
     },
 
     #' @description Percentile confidence intervals per measure
+    #'
     #' @param conf Confidence level. Default: 0.95 (i.e. the 2.5th and 97.5th
     #' percentile points are used to define the confidence interval range)
+    #'
+    #' @return a [tibble][tibble::tibble] with confidence intervals for the
+    #' performance score (per measure used).
     percent_ci = function(conf = 0.95) {
       stopifnot('Run `calculate()` first'= !is.null(self$scores))
       stopifnot(conf > 0, conf < 1)
@@ -141,8 +161,11 @@ BootRes = R6Class('BootstrapResult',
         as_tibble(rownames = 'perc')
     },
 
-    #' @description Median summary score for the bootstrapping scores
+    #' @description Median summary score for the bootstrapped scores
     #' (one per measure)
+    #'
+    #' @return a [tibble row][tibble::tibble] with the median value of a score
+    #' across all bootstrap resamplings.
     score_median = function() {
       stopifnot('Run `calculate()` first'= !is.null(self$scores))
 

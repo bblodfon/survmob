@@ -6,6 +6,7 @@
 \description{
 Use this class to measure the performance of a survival learner
 on a test dataset using bootstrapping.
+See example.
 }
 \examples{
 library(mlr3proba)
@@ -26,7 +27,7 @@ cox$train(task, row_ids = part$train)
 
 # bootstrap the test set 10 times and measure performance
 # using all available test metrics from `bench_msrs()`
-# can be parallelized by increaaing `test_workers`
+# can be parallelized by increasing `test_workers`
 brs = BootRes$new(test_nrsmps = 10)
 brs$calculate(task = task, learner = cox, part = part)
 
@@ -46,19 +47,19 @@ brs$percent_ci()
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
-\item{\code{task_id}}{mpla}
+\item{\code{task_id}}{Task id}
 
-\item{\code{lrn_id}}{mpla}
+\item{\code{lrn_id}}{Learner id}
 
-\item{\code{test_measure_ids}}{mpla}
+\item{\code{test_measure_ids}}{Measure ids}
 
-\item{\code{test_nrsmps}}{mpla}
+\item{\code{test_nrsmps}}{Number of bootstrapped resamplings}
 
-\item{\code{test_workers}}{mpla}
+\item{\code{test_workers}}{Number of workers for bootstrap parallelization}
 
-\item{\code{score}}{mpla}
+\item{\code{score}}{Performance on the original test set}
 
-\item{\code{scores}}{mpla}
+\item{\code{scores}}{Performance on bootstrapped test sets}
 }
 \if{html}{\out{</div>}}
 }
@@ -76,7 +77,7 @@ brs$percent_ci()
 \if{html}{\out{<a id="method-BootstrapResult-new"></a>}}
 \if{latex}{\out{\hypertarget{method-BootstrapResult-new}{}}}
 \subsection{Method \code{new()}}{
-mpla mpla
+Creates a new instance of this \link[R6:R6Class]{R6} class.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{BootRes$new(
   test_measure_ids = bench_msrs()$id,
@@ -88,11 +89,15 @@ mpla mpla
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{test_measure_ids}}{mpla}
+\item{\code{test_measure_ids}}{Measure ids.
+Default: use all available measures from \code{\link[=bench_msrs]{bench_msrs()}} function.}
 
-\item{\code{test_nrsmps}}{mpla}
+\item{\code{test_nrsmps}}{Number of bootstrapped resamplings. Default: 1000.}
 
-\item{\code{test_workers}}{mpla}
+\item{\code{test_workers}}{Number of workers for bootstrap parallelization.
+Default is 1 but we advise careful consideration of how many workers
+to use (depends on the total number of CPUs and memory available, the
+size of the dataset, the learner's memory footprint, etc.)}
 }
 \if{html}{\out{</div>}}
 }
@@ -101,7 +106,8 @@ mpla mpla
 \if{html}{\out{<a id="method-BootstrapResult-calculate"></a>}}
 \if{latex}{\out{\hypertarget{method-BootstrapResult-calculate}{}}}
 \subsection{Method \code{calculate()}}{
-Calculate bootstrapping performance scores
+Calculate bootstrap performance scores on the test set of
+the given survival task.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{BootRes$calculate(task, learner, part, quiet = TRUE)}\if{html}{\out{</div>}}
 }
@@ -109,15 +115,24 @@ Calculate bootstrapping performance scores
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{task}}{mpla}
+\item{\code{task}}{A \link[mlr3proba:TaskSurv]{survival task}}
 
-\item{\code{learner}}{mpla}
+\item{\code{learner}}{A \link[mlr3proba:LearnerSurv]{learner}, \strong{trained} on the
+\code{part$train} set of the given task.}
 
-\item{\code{part}}{mpla}
+\item{\code{part}}{A \link[mlr3:partition]{partition} of the given task to train
+and test sets.}
 
-\item{\code{quiet}}{Default: TRUE => don't report time elapsed}
+\item{\code{quiet}}{Default: TRUE (\strong{don't} report time elapsed)}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+(invisibly) a \link[tibble:tibble]{tibble} (\code{scores}) with columns the
+metrics used and rows the performance scores measured on the different
+bootstrapped resamplings.
+Also the performance per metric on the original test set is recorded in
+the variable \code{score}.
 }
 }
 \if{html}{\out{<hr>}}
@@ -137,17 +152,25 @@ percentile points are used to define the confidence interval range)}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+a \link[tibble:tibble]{tibble} with confidence intervals for the
+performance score (per measure used).
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-BootstrapResult-score_median"></a>}}
 \if{latex}{\out{\hypertarget{method-BootstrapResult-score_median}{}}}
 \subsection{Method \code{score_median()}}{
-Median summary score for the bootstrapping scores
+Median summary score for the bootstrapped scores
 (one per measure)
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{BootRes$score_median()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+a \link[tibble:tibble]{tibble row} with the median value of a score
+across all bootstrap resamplings.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-BootstrapResult-clone"></a>}}
