@@ -2,12 +2,46 @@
 % Please edit documentation in R/BootstrapResult.R
 \name{BootRes}
 \alias{BootRes}
-\title{Bootsrap Result Class}
+\title{Bootstrap Result Class}
 \description{
-mpla mpla
+Use this class to measure the performance of a survival learner
+on a test dataset using bootstrapping.
 }
 \examples{
-mpla mpla
+library(mlr3proba)
+library(tibble)
+library(dplyr)
+
+# Lung task - impute missing values
+task = tsk('lung')
+pre = po('encode', method = 'treatment') \%>>\%
+      po('imputelearner', lrn('regr.rpart'))
+task = pre$train(task)[[1]]
+# partition to train and test sets
+part = partition(task)
+
+# train model on the train set
+cox = lrn('surv.coxph', id = 'cox')
+cox$train(task, row_ids = part$train)
+
+# bootstrap the test set 10 times and measure performance
+# using all available test metrics from `bench_msrs()`
+# can be parallelized by increaaing `test_workers`
+brs = BootRes$new(test_nrsmps = 10)
+brs$calculate(task = task, learner = cox, part = part)
+
+# performance on the test set
+brs$score
+
+# bootstrapped performance scores
+brs$scores
+
+# Median summary score per metric
+brs$score_median()
+
+# Percentile Confidence Intervals
+brs$percent_ci()
+
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
