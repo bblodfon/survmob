@@ -65,9 +65,11 @@ BootRes = R6Class('BootstrapResult',
     #' Default: use all available measures from [bench_msrs()] function.
     #' @param test_nrsmps Number of bootstrapped resamplings. Default: 1000.
     #' @param test_workers Number of workers for bootstrap parallelization.
-    #' Default is 1 (sequential) but we advise careful consideration of how many
-    #' workers to use (depends on the total number of CPUs and memory available,
-    #' the size of the dataset, the learner's memory footprint, etc.)
+    #' Default is 1 (sequential).
+    #' We advise careful consideration of how many workers to use.
+    #' Several factor might influence this, such as the total number of CPUs
+    #' and memory available, the size of the dataset, the learner's memory
+    #' footprint, the learner itself (e.g. `xgboost` might have problems), etc.
     initialize = function(test_measure_ids = bench_msrs()$id,
       test_nrsmps = 1000, test_workers = 1) {
       if (!all(test_measure_ids %in% bench_msrs()$id)) {

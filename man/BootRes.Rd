@@ -97,9 +97,11 @@ Default: use all available measures from \code{\link[=bench_msrs]{bench_msrs()}}
 \item{\code{test_nrsmps}}{Number of bootstrapped resamplings. Default: 1000.}
 
 \item{\code{test_workers}}{Number of workers for bootstrap parallelization.
-Default is 1 (sequential) but we advise careful consideration of how many
-workers to use (depends on the total number of CPUs and memory available,
-the size of the dataset, the learner's memory footprint, etc.)}
+Default is 1 (sequential).
+We advise careful consideration of how many workers to use.
+Several factor might influence this, such as the total number of CPUs
+and memory available, the size of the dataset, the learner's memory
+footprint, the learner itself (e.g. \code{xgboost} might have problems), etc.}
 }
 \if{html}{\out{</div>}}
 }
