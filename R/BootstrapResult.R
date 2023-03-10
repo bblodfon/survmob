@@ -65,9 +65,9 @@ BootRes = R6Class('BootstrapResult',
     #' Default: use all available measures from [bench_msrs()] function.
     #' @param test_nrsmps Number of bootstrapped resamplings. Default: 1000.
     #' @param test_workers Number of workers for bootstrap parallelization.
-    #' Default is 1 but we advise careful consideration of how many workers
-    #' to use (depends on the total number of CPUs and memory available, the
-    #' size of the dataset, the learner's memory footprint, etc.)
+    #' Default is 1 (sequential) but we advise careful consideration of how many
+    #' workers to use (depends on the total number of CPUs and memory available,
+    #' the size of the dataset, the learner's memory footprint, etc.)
     initialize = function(test_measure_ids = bench_msrs()$id,
       test_nrsmps = 1000, test_workers = 1) {
       if (!all(test_measure_ids %in% bench_msrs()$id)) {
@@ -94,6 +94,11 @@ BootRes = R6Class('BootstrapResult',
     #' @param part A [partition][mlr3::partition] of the given task to train
     #' and test sets.
     #' @param quiet Default: TRUE (**don't** report time elapsed)
+    #'
+    #' @details Parallelization: we check if the system allows for
+    #' [multicore][future::multicore]
+    #' parallelization backend strategy (Linux systems mostly) and use that,
+    #' otherwise we use [multisession][future::multisession].
     #'
     #' @return (invisibly) a [tibble][tibble::tibble] (`scores`) with columns the
     #' metrics used and rows the performance scores measured on the different
@@ -125,8 +130,11 @@ BootRes = R6Class('BootstrapResult',
         score(measures, task = task, train_set = part$train) %>%
         as_tibble_row()
 
+      # decide on parallelization strategy
+      strategy = ifelse(parallelly::supportsMulticore(), 'multicore', 'multisession')
+      future::plan(strategy, workers = self$test_workers)
+
       # get scores on bootstrap test sets
-      future::plan('multisession', workers = self$test_workers)
       tic()
       scores = future.apply::future_lapply(1:self$test_nrsmps, function(i) {
         # generate bootstrap test dataset

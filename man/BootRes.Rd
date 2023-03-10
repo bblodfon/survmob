@@ -10,8 +10,9 @@ See example.
 }
 \examples{
 library(mlr3proba)
+library(mlr3pipelines)
 library(tibble)
-library(dplyr)
+library(dplyr, warn.conflicts = FALSE)
 
 # Lung task - impute missing values
 task = tsk('lung')
@@ -42,6 +43,7 @@ brs$score_median()
 
 # Percentile Confidence Intervals
 brs$percent_ci()
+brs$percent_ci(conf = 0.9)
 
 }
 \section{Public fields}{
@@ -95,9 +97,9 @@ Default: use all available measures from \code{\link[=bench_msrs]{bench_msrs()}}
 \item{\code{test_nrsmps}}{Number of bootstrapped resamplings. Default: 1000.}
 
 \item{\code{test_workers}}{Number of workers for bootstrap parallelization.
-Default is 1 but we advise careful consideration of how many workers
-to use (depends on the total number of CPUs and memory available, the
-size of the dataset, the learner's memory footprint, etc.)}
+Default is 1 (sequential) but we advise careful consideration of how many
+workers to use (depends on the total number of CPUs and memory available,
+the size of the dataset, the learner's memory footprint, etc.)}
 }
 \if{html}{\out{</div>}}
 }
@@ -127,6 +129,13 @@ and test sets.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Details}{
+Parallelization: we check if the system allows for
+\link[future:multicore]{multicore}
+parallelization backend strategy (Linux systems mostly) and use that,
+otherwise we use \link[future:multisession]{multisession}.
+}
+
 \subsection{Returns}{
 (invisibly) a \link[tibble:tibble]{tibble} (\code{scores}) with columns the
 metrics used and rows the performance scores measured on the different
