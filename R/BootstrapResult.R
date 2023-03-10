@@ -6,8 +6,9 @@
 #'
 #' @examples
 #' library(mlr3proba)
+#' library(mlr3pipelines)
 #' library(tibble)
-#' library(dplyr)
+#' library(dplyr, warn.conflicts = FALSE)
 #'
 #' # Lung task - impute missing values
 #' task = tsk('lung')
@@ -38,6 +39,7 @@
 #'
 #' # Percentile Confidence Intervals
 #' brs$percent_ci()
+#' brs$percent_ci(conf = 0.9)
 #'
 #' @export
 BootRes = R6Class('BootstrapResult',
