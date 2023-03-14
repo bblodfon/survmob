@@ -1,13 +1,14 @@
 #' @title Ensemble Feature Selection (eFS)
 #'
 #' @description This class stores the configuration and result of the proposed
-#' ensemble feature selection approach, as well as the function (`run()`) to
-#' execute it.
+#' hybrid ensemble feature selection approach, as well as the function (`run()`)
+#' to execute it.
 #'
 #' We use a couple of different **random survival forests** (RSFs) as learners
 #' and a **recursive feature elimination algorithm** (RFE, wrapper-based feature
 #' selection) to find the most predictive feature subset in the given task
 #' (dataset) for each learner.
+#' The dataset can be subsampled before the execution of each RFE run.
 #' This process repeats a number of times for each RSF learner and therefore
 #' returns different best feature subsets for further analysis and processing
 #' (e.g. finding robust features).
@@ -35,7 +36,7 @@
 #'
 #' # create eFS object
 #' efs = eFS$new(lrn_ids = c('rsf_logrank', 'rsf_cindex'), nthreads_rsf = 2,
-#'   feature_fraction = 0.6, n_features = 1, repeats = 3
+#'   feature_fraction = 0.6, n_features = 1, repeats = 3, subsample_ratio = 0.8
 #' )
 #'
 #' # useful info for RFE (feature subset sizes, mtry used)
@@ -57,7 +58,7 @@
 #'
 #' # get frequency selection stats (per learner and consensus)
 #' fss = efs$fs_stats()
-#' fss$consensus
+#' fss$consensus # ranked consensus features
 #'
 #' # Barplots: Feature Selection Frequency
 #' efs$ffs_plot(lrn_id = 'consensus', title = 'RSF consensus')
@@ -94,6 +95,10 @@ eFS = R6Class('EnsembleFeatureSelection',
     #' @field repeats (`int(1)`)\cr
     #' Number of times to run RFE on each RSF learner
     repeats = NULL,
+
+    #' @field subsample_ratio (`double(1)`)\cr
+    #' Ratio of observations to be selected in each RFE repeat
+    subsample_ratio = NULL,
 
     #' @field n_features (`int(1)`)\cr
     #' Number of features that signals the termination of RFE
@@ -139,6 +144,16 @@ eFS = R6Class('EnsembleFeatureSelection',
     #' @param repeats Number of times to run the RFE algorithm on each RSF
     #' learner. Defaults to 100.
     #'
+    #' @param subsample_ratio Ratio of observations to use in each RFE run.
+    #' The selection is done randomly each time and is stratified on the `status`
+    #' target variable (so that the censoring distribution is the same as the
+    #' original dataset).
+    #' This option enables the ensemble feature selection algorithm to be used
+    #' on different subsets of a given dataset.
+    #' Defaults to 0.9.
+    #' A value of 1 means that we always use all observations and no subsampling
+    #' is performed.
+    #'
     #' @param n_features Number of features that signals the termination of the
     #' RFE algorithm. Defaults to 2.
     #'
@@ -171,7 +186,8 @@ eFS = R6Class('EnsembleFeatureSelection',
       lrn_ids = self$supported_lrn_ids(),
       msr_id = 'oob_error',
       resampling = mlr3::rsmp('insample'),
-      repeats = 100, n_features = 2, feature_fraction = 0.8,
+      repeats = 100, subsample_ratio = 0.9,
+      n_features = 2, feature_fraction = 0.8,
       nthreads_rsf = parallelly::availableCores(), num_trees = 250
     ) {
       # learner ids
@@ -201,6 +217,11 @@ eFS = R6Class('EnsembleFeatureSelection',
         self$repeats = repeats
       else
         stop('\'repeats\' needs to be larger than 0')
+
+      if (subsample_ratio >= 0 && subsample_ratio <= 1)
+        self$subsample_ratio = subsample_ratio
+      else
+        stop('\'subsample_ratio\' needs to be between 0 and 1 (inclusive)')
 
       if (n_features > 0)
         self$n_features = n_features
@@ -333,7 +354,8 @@ eFS = R6Class('EnsembleFeatureSelection',
           store_models = store_archive # hacked :)
         )
 
-        at$train(task)
+        part = partition(task, ratio = self$subsample_ratio, stratify = TRUE)
+        at$train(task, row_ids = part$train)
 
         selected_features = at$fselect_instance$result_feature_set
         nfeatures = length(selected_features)

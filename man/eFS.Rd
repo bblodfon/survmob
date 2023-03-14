@@ -5,13 +5,14 @@
 \title{Ensemble Feature Selection (eFS)}
 \description{
 This class stores the configuration and result of the proposed
-ensemble feature selection approach, as well as the function (\code{run()}) to
-execute it.
+hybrid ensemble feature selection approach, as well as the function (\code{run()})
+to execute it.
 
 We use a couple of different \strong{random survival forests} (RSFs) as learners
 and a \strong{recursive feature elimination algorithm} (RFE, wrapper-based feature
 selection) to find the most predictive feature subset in the given task
 (dataset) for each learner.
+The dataset can be subsampled before the execution of each RFE run.
 This process repeats a number of times for each RSF learner and therefore
 returns different best feature subsets for further analysis and processing
 (e.g. finding robust features).
@@ -39,7 +40,7 @@ eFS$new()$supported_lrn_ids()
 
 # create eFS object
 efs = eFS$new(lrn_ids = c('rsf_logrank', 'rsf_cindex'), nthreads_rsf = 2,
-  feature_fraction = 0.6, n_features = 1, repeats = 3
+  feature_fraction = 0.6, n_features = 1, repeats = 3, subsample_ratio = 0.8
 )
 
 # useful info for RFE (feature subset sizes, mtry used)
@@ -61,7 +62,7 @@ median(res$nfeatures)
 
 # get frequency selection stats (per learner and consensus)
 fss = efs$fs_stats()
-fss$consensus
+fss$consensus # ranked consensus features
 
 # Barplots: Feature Selection Frequency
 efs$ffs_plot(lrn_id = 'consensus', title = 'RSF consensus')
@@ -94,6 +95,9 @@ Measure id}
 
 \item{\code{repeats}}{(\code{int(1)})\cr
 Number of times to run RFE on each RSF learner}
+
+\item{\code{subsample_ratio}}{(\code{double(1)})\cr
+Ratio of observations to be selected in each RFE repeat}
 
 \item{\code{n_features}}{(\code{int(1)})\cr
 Number of features that signals the termination of RFE}
@@ -138,6 +142,7 @@ Creates a new instance of this \link[R6:R6Class]{R6} class.
   msr_id = "oob_error",
   resampling = mlr3::rsmp("insample"),
   repeats = 100,
+  subsample_ratio = 0.9,
   n_features = 2,
   feature_fraction = 0.8,
   nthreads_rsf = parallelly::availableCores(),
@@ -169,6 +174,16 @@ Default resampling is \link[mlr3:mlr_resamplings_insample]{insample}.}
 
 \item{\code{repeats}}{Number of times to run the RFE algorithm on each RSF
 learner. Defaults to 100.}
+
+\item{\code{subsample_ratio}}{Ratio of observations to use in each RFE run.
+The selection is done randomly each time and is stratified on the \code{status}
+target variable (so that the censoring distribution is the same as the
+original dataset).
+This option enables the ensemble feature selection algorithm to be used
+on different subsets of a given dataset.
+Defaults to 0.9.
+A value of 1 means that we always use all observations and no subsampling
+is performed.}
 
 \item{\code{n_features}}{Number of features that signals the termination of the
 RFE algorithm. Defaults to 2.}

@@ -8,6 +8,7 @@ test_that('eFS is initialized properly', {
   expect_equal(efs$msr_id, 'oob_error')
   expect_equal(efs$resampling$id, 'insample')
   expect_equal(efs$repeats, 100)
+  expect_equal(efs$subsample_ratio, 0.9)
   expect_equal(efs$feature_fraction, 0.8)
   expect_equal(efs$n_features, 2)
 
@@ -21,6 +22,7 @@ test_that('eFS is initialized properly', {
   expect_error(eFS$new(repeats = 0))
   expect_error(eFS$new(n_features = 0))
   expect_error(eFS$new(feature_fraction = 1)) # must be less than 1 strictly
+  expect_error(eFS$new(subsample_ratio = 1.1))
   expect_error(eFS$new(num_trees = 0))
   expect_error(eFS$new(nthreads_rsf = 0))
   expect_error(eFS$new(mtry_ratio = 1.2)) # unused argument
