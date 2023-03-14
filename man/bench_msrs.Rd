@@ -17,23 +17,35 @@ can be used for benchmarking survival learners.
 \details{
 The following measures are provided via \link{mlr3proba}:
 \itemize{
-\item Discrimination measures (ranking \code{crank} prediction type)
+\item Discrimination measures (input is ranking prediction - \code{crank})
 \itemize{
-\item \link[mlr3proba:mlr_measures_surv.cindex]{Harrell's C-index} (doesn't account for censoring)
-\item \link[mlr3proba:mlr_measures_surv.cindex]{Uno's C-index} (estimates censoring distribution using KM)
+\item \link[mlr3proba:mlr_measures_surv.cindex]{Harrell's C-index} (doesn't account
+for censoring)
+\item \link[mlr3proba:mlr_measures_surv.cindex]{Uno's C-index} (estimates censoring
+distribution using Kaplan-Meier)
 }
-\item Calibration measures (survival \code{distr} prediction type)
+\item Calibration measures (input is survival predictions - \code{distr})
 \itemize{
-\item \link[mlr3proba:mlr_measures_surv.graf]{Integrated Brier Score} (with \emph{proper = TRUE, method = 2}, estimates KM censoring distribution, is also a measure of discrimination)
-\item \link[mlr3proba:mlr_measures_surv.rcll]{Right-Censored Log-Loss} (proper calibration score)
-\item \link[mlr3proba:mlr_measures_surv.dcalib]{D-Calibration} (with \emph{B = 10, chisq = FALSE}, returning the measure and not the p-value)
+\item \link[mlr3proba:mlr_measures_surv.graf]{Integrated Brier Score} (with
+\emph{proper = TRUE, method = 2}, estimates the censoring distribution using
+Kaplan-Meier, is also a measure of discrimination)
+\item \link[mlr3proba:mlr_measures_surv.rcll]{Right-Censored Log-Loss} (proper loss score)
+\item \link[mlr3proba:mlr_measures_surv.dcalib]{D-Calibration} (with \emph{B = 10,
+chisq = FALSE}, returning the measure and not the p-value)
 }
 }
 
-Any of the above measures \strong{can} be used for model \emph{evaluation} (but depends
-on several other factors if they \strong{should} be used, e.g. censoring
+The Integrated Brier Score and Right-Censored Log-Loss are also offered in
+Explained Residual Variation (ERV) versions, where the resulting score can
+be interpreted as the percentage increase in performance over the baseline
+Kaplan-Meier (KM) model.
+So the best possible value for ERV-standardized scores is 1 and negative
+values correspond to worse performance than KM.
+
+Any of the above measures \strong{can be used for model evaluation} (but depends
+on several other factors if they \emph{should} be used, e.g. censoring
 distribution, dataset size, proportion of events in the test set, etc.).
-For model \emph{optimization/tuning}, we suggest the Right-Censored Log-Loss
+For model \strong{optimization/tuning}, we suggest the Right-Censored Log-Loss
 for survival predictions and Uno's C-index for risk predictions
 (e.g. linear predictors).
 }

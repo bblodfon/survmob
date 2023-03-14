@@ -6,7 +6,7 @@ test_that('BootRes works', {
   boot_res = BootRes$new(test_nrsmps = 2)
 
   # Initialization ----
-  expect_equal(length(boot_res$test_measure_ids), 5)
+  expect_equal(length(boot_res$test_measure_ids), 7)
   expect_equal(boot_res$test_nrsmps, 2)
   expect_equal(boot_res$test_workers, 1) # sequential
   expect_null(boot_res$task_id)
@@ -39,7 +39,7 @@ test_that('BootRes works', {
   expect_class(scores, 'tbl_df')
   expect_equal(colnames(scores), bench_msrs()$id) # all measures
   expect_numeric(scores$rcll)
-  expect_equal(dim(scores), c(2,5))
+  expect_equal(dim(scores), c(2,7))
 
   # median scores ----
   score_median = boot_res$score_median()
@@ -52,7 +52,7 @@ test_that('BootRes works', {
   expect_class(per_ci, 'tbl_df')
   expect_equal(per_ci$perc, c('2.5%', '97.5%'))
   expect_numeric(per_ci$uno_c)
-  expect_equal(dim(boot_res$percent_ci()), c(2,6))
+  expect_equal(dim(boot_res$percent_ci()), c(2,8))
 
   # 1 measure ----
   boot_res2 = BootRes$new(test_nrsmps = 2, test_measure_ids = 'rcll')

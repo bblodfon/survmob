@@ -1,9 +1,10 @@
 test_that('bench_msrs returns the expected measures', {
   ms = bench_msrs()
-  expect_equal(dim(ms), c(5, 2))
+  expect_equal(dim(ms), c(7, 2))
 
   # check external measure ids
-  expect_equal(ms$id, c('harrell_c', 'uno_c', 'ibrier', 'rcll', 'dcal'))
+  expect_equal(ms$id, c('harrell_c', 'uno_c', 'ibrier', 'ibrier_erv', 'rcll',
+    'rcll_erv', 'dcal'))
 
   # Uno's C-index
   uno_c = ms[id == 'uno_c']$measure[[1L]]
@@ -11,24 +12,43 @@ test_that('bench_msrs returns the expected measures', {
   expect_equal(uno_c$param_set$values$weight_meth, 'G2')
   expect_equal(uno_c$param_set$values$eps, 1e-3)
   expect_equal(uno_c$id, 'uno_c')
+  expect_equal(uno_c$label, 'UnoC')
 
   # Integrated Brier Score
   ibrier = ms[id == 'ibrier']$measure[[1L]]
   expect_class(ibrier, c('R6', 'MeasureSurv', 'MeasureSurvGraf'))
-  expect_equal(ibrier$param_set$values$integrated, TRUE)
+  expect_true(ibrier$param_set$values$integrated)
   expect_equal(ibrier$param_set$values$method, 2)
-  expect_equal(ibrier$param_set$values$proper, TRUE)
+  expect_true(ibrier$param_set$values$proper)
+  expect_false(ibrier$param_set$values$ERV)
   expect_equal(ibrier$id, 'ibrier')
+  expect_equal(ibrier$label, 'IBrier')
+
+  # Integrated Brier Score (ERV version)
+  ibrier_erv = ms[id == 'ibrier_erv']$measure[[1L]]
+  expect_class(ibrier_erv, c('R6', 'MeasureSurv', 'MeasureSurvGraf'))
+  expect_true(ibrier_erv$param_set$values$integrated)
+  expect_equal(ibrier_erv$param_set$values$method, 2)
+  expect_true(ibrier_erv$param_set$values$proper)
+  expect_true(ibrier_erv$param_set$values$ERV)
+  expect_equal(ibrier_erv$id, 'ibrier_erv')
+  expect_equal(ibrier_erv$label, 'IBrier-ERV')
 
   # RCLL
   rcll = ms[id == 'rcll']$measure[[1L]]
   expect_class(rcll, c('R6', 'MeasureSurv', 'MeasureSurvRCLL'))
   expect_equal(rcll$param_set$values$eps, 1e-15)
+  expect_false(rcll$param_set$values$ERV)
   expect_equal(rcll$id, 'rcll')
+  expect_equal(rcll$label, 'RCLL')
 
-  # check labels
-  msr_labels = sapply(ms$measure, function(measure) measure$label)
-  expect_equal(msr_labels, c('HarrellC', 'UnoC', 'IBrier', 'RCLL', 'Dcal'))
+  # RCLL (ERV version)
+  rcll_erv = ms[id == 'rcll_erv']$measure[[1L]]
+  expect_class(rcll_erv, c('R6', 'MeasureSurv', 'MeasureSurvRCLL'))
+  expect_equal(rcll_erv$param_set$values$eps, 1e-15)
+  expect_true(rcll_erv$param_set$values$ERV)
+  expect_equal(rcll_erv$id, 'rcll_erv')
+  expect_equal(rcll_erv$label, 'RCLL-ERV')
 
   # check that the two C-indexes' internal ids are different
   msr_ids = sapply(ms$measure, function(measure) measure$id)
