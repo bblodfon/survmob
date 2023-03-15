@@ -65,6 +65,8 @@ test_that('task_powerset works', {
     c(task1$feature_names, task3$feature_names))
   expect_equal(powset3[['d1-d2-d3']]$feature_names,
     c(task1$feature_names, task2$feature_names, task3$feature_names))
+  # check that task ids match the list names
+  expect_equal(names(powset3), unname(mlr3misc::map_chr(powset3, `[[`, 'id')))
 
   # check classification tasks
   powset4 = task_powerset(list(task4, task5, task6))
