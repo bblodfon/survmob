@@ -244,7 +244,7 @@ SurvLPS = R6Class('SurvLPS',
             xgboost_cox$id = 'XGBoostCox'
             xgboost_cox$label = 'Extreme Gradient Boosting (Cox)'
 
-            # force the use of a 'test' set for early validation
+            # force the use of a 'test' set for validation when early stopping
             if (grepl(pattern = 'early', x = lrn_id)) {
               xgboost_cox$param_set$values$XGBoostCox.early_stopping_set = 'test'
             }
@@ -262,7 +262,7 @@ SurvLPS = R6Class('SurvLPS',
             xgboost_aft$id = 'XGBoostAFT'
             xgboost_aft$label = 'Extreme Gradient Boosting (AFT)'
 
-            # force the use of a 'test' set for early validation
+            # force the use of a 'test' set for validation when early stopping
             if (grepl(pattern = 'early', x = lrn_id)) {
               xgboost_aft$param_set$values$XGBoostAFT.early_stopping_set = 'test'
             }

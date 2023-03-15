@@ -163,6 +163,7 @@ test_that('Tune XGBoost (Cox, AFT) using RCLL measure + early stopping', {
   expect_numeric(xgb_at$learner$graph_model$pipeops$
       XGBoostCox$learner_model$importance())
 
+  # different measures work
   expect_number(p$score(msr('surv.cindex')))
   expect_number(p$score(msr('surv.rcll')))
   expect_number(p$score(msr('surv.brier')))
@@ -197,6 +198,7 @@ test_that('Tune XGBoost (Cox, AFT) using RCLL measure + early stopping', {
   expect_numeric(p$lp)
   expect_class(p$distr, c('Distribution', 'Matdist'))
 
+  # different measures work
   expect_number(p$score(msr('surv.cindex')))
   expect_number(p$score(msr('surv.rcll')))
   expect_number(p$score(msr('surv.brier')))
