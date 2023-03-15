@@ -318,28 +318,31 @@ SurvLPS = R6Class('SurvLPS',
           paradox::ps(
             num.trees = p_int(100, 1500),
             mtry.ratio = p_dbl(0.1, 0.9),
-            min.node.size = p_int(3, 20)
+            min.node.size = p_int(3, 20),
+            alpha = p_fct(c(0.1, 0.3, 0.5, 0.7, 0.9)),
+            minprop = p_fct(c(0, 0.1, 0.25, 0.4))
           )
         } else if (lrn_id == 'rsf_extratrees') {
           paradox::ps(
             num.trees = p_int(100, 1500),
             mtry.ratio = p_dbl(0.1, 0.9),
-            min.node.size = p_int(3, 20)
+            min.node.size = p_int(3, 20),
+            num.random.splits = p_int(1, 10)
           )
         } else if (lrn_id == 'aorsf') {
           paradox::ps(
             n_tree = p_int(100, 1500),
+            # we don't tune `mtry` as it changes per node
             # https://github.com/ropensci/aorsf/issues/16#issuecomment-1453730654
-            # don't tune `mtry` as it changes per node
-            # mtry_ratio = p_dbl(0.1, 0.9),
             leaf_min_obs = p_int(3, 20)
           )
         } else if (lrn_id == 'coxboost') { # CoxBoost
           paradox::ps(
+            # up to 500 to minimize overfitting (if possible)
             stepno = p_int(50, 500),
-            # leave at default => 9 * sum(status == 1)?
+            # default is => 9 * sum(status == 1)
             penalty = p_int(10, 1000, logscale = TRUE),
-            # leave at default => 1?
+            # default is => 1
             stepsize.factor = p_dbl(1e-01, 10, logscale = TRUE),
             # use the penalized scores - `hpscore` is faster to calculate
             criterion = p_fct(c('pscore', 'hpscore'))
