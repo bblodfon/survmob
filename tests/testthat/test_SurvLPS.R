@@ -155,8 +155,8 @@ test_that('Tune XGBoost (Cox, AFT) using RCLL measure + early stopping', {
   # check predictions
   p = xgb_at$predict(taskv)
   expect_class(p, 'PredictionSurv')
-  expect_numeric(p$crank)
-  expect_numeric(p$lp)
+  expect_numeric(p$crank, all.missing = FALSE)
+  expect_numeric(p$lp, all.missing = FALSE)
   expect_class(p$distr, c('Distribution', 'Matdist'))
 
   # tricky to get the importance scores!
@@ -194,8 +194,8 @@ test_that('Tune XGBoost (Cox, AFT) using RCLL measure + early stopping', {
   # check predictions
   p = xgb_aft_at$predict(taskv)
   expect_class(p, 'PredictionSurv')
-  expect_numeric(p$crank)
-  expect_numeric(p$lp)
+  expect_numeric(p$crank, all.missing = FALSE)
+  expect_numeric(p$lp, all.missing = FALSE)
   expect_class(p$distr, c('Distribution', 'Matdist'))
 
   # different measures work
