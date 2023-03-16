@@ -52,6 +52,11 @@ for survival predictions and Uno's C-index for risk predictions
 \examples{
 library(mlr3proba)
 ms = bench_msrs()
+
+# Available measures ids
+ms$id
+
+# Get specific mlr3 measure objects
 ms[id \%in\% c('ibrier','harrell_c')]$measure
 
 }
