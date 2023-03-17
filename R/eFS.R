@@ -188,7 +188,7 @@ eFS = R6Class('EnsembleFeatureSelection',
       resampling = mlr3::rsmp('insample'),
       repeats = 100, subsample_ratio = 0.9,
       n_features = 2, feature_fraction = 0.8,
-      nthreads_rsf = parallelly::availableCores(), num_trees = 250
+      nthreads_rsf = unname(parallelly::availableCores()), num_trees = 250
     ) {
       # learner ids
       supp_lrn_ids = self$supported_lrn_ids()

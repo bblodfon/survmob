@@ -145,7 +145,7 @@ Creates a new instance of this \link[R6:R6Class]{R6} class.
   subsample_ratio = 0.9,
   n_features = 2,
   feature_fraction = 0.8,
-  nthreads_rsf = parallelly::availableCores(),
+  nthreads_rsf = unname(parallelly::availableCores()),
   num_trees = 250
 )}\if{html}{\out{</div>}}
 }
