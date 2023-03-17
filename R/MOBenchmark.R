@@ -15,6 +15,10 @@
 #' Performance is assessed using various survival measures on bootstrap
 #' resamplings of a **separate test cohort**.
 #'
+#' The most important thing to keep in mind is that this class was made to
+#' **benchmark datasets that share the same observations** (maybe not
+#' conceptually in case of separate given tasks and `gen_task_powerset = FALSE`
+#' but most definitely in number).
 #' See example below.
 #'
 #' @examples
@@ -90,7 +94,10 @@ MOBenchmark = R6Class('MultiOmicsBenchmark',
     #' [task powerset][task_powerset] from the given `tasks`.
     #' If TRUE (default), then the `tasks` should be different omic datasets,
     #' with the same target variables (`time`, `status`), i.e. corresponding to
-    #' the same patient cohort. If FALSE, we use `tasks` as is.
+    #' the same patient cohort.
+    #' If FALSE, we use `tasks` as is, but you need to make sure they have the
+    #' same number of observations (rows), otherwise the common partition
+    #' to train and test sets (`part`) will not be tasks.
     #' @param part List with a disjoint (common) partition of the tasks to
     #' `train` and `test` indexes.
     #' The training/tuning is performed on the `train` set and the
