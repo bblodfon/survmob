@@ -18,7 +18,35 @@
 #' See example below.
 #'
 #' @examples
+#' library(mlr3verse)
 #' library(mlr3proba)
+#'
+#' # Logging
+#' lgr::get_logger('bbotk')$set_threshold('warn')
+#' lgr::get_logger('mlr3')$set_threshold('warn')
+#'
+#' # task lung
+#' task = tsk('lung')
+#' pre = po('encode', method = 'treatment') %>>%
+#'       po('imputelearner', lrn('regr.rpart'))
+#' task = pre$train(task)[[1]]
+#'
+#' # partition to train and test sets
+#' part = partition(task, ratio = 0.8)
+#'
+#' mob = MOBenchmark$new(
+#'   tasks = list(task), part = part,
+#'   lrn_ids = c('coxph', 'coxnet', 'aorsf'),
+#'   tune_nevals = 2, test_nrsmps = 50, test_workers = 5,
+#'   tune_rsmp = rsmp('holdout', ratio = 0.8),
+#'   quiet = FALSE, keep_models = TRUE
+#' )
+#'
+#' # execute benchmark
+#' mob$run()
+#'
+#' # result tibble
+#' mob$result
 #'
 #' @export
 MOBenchmark = R6Class('MultiOmicsBenchmark',
