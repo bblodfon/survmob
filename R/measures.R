@@ -57,13 +57,14 @@ bench_msrs = function() {
 
   # Integrated Brier Score (ERV version)
   ibrier_erv = msr('surv.graf', proper = TRUE, ERV = TRUE, label = 'IBrier-ERV',
-    id = 'ibrier_erv')
+    id = 'ibrier_erv', minimize = FALSE, range = c(-Inf, 1))
 
   # Right-Censored Log-Loss
   rcll = msr('surv.rcll', id = 'rcll', label = 'RCLL')
 
   # Right-Censored Log-Loss (ERV version)
-  rcll_erv = msr('surv.rcll', ERV = TRUE, id = 'rcll_erv', label = 'RCLL-ERV')
+  rcll_erv = msr('surv.rcll', ERV = TRUE, id = 'rcll_erv', label = 'RCLL-ERV',
+    minimize = FALSE, range = c(-Inf, 1))
 
   # D-calibration
   dcal = msr('surv.dcalib', B = 10, chisq = FALSE, label = 'Dcalibration',

@@ -13,6 +13,7 @@ test_that('bench_msrs returns the expected measures', {
   expect_equal(uno_c$param_set$values$eps, 1e-3)
   expect_equal(uno_c$id, 'uno_c')
   expect_equal(uno_c$label, 'UnoC')
+  expect_false(uno_c$minimize)
 
   # Integrated Brier Score
   ibrier = ms[id == 'ibrier']$measure[[1L]]
@@ -23,6 +24,7 @@ test_that('bench_msrs returns the expected measures', {
   expect_false(ibrier$param_set$values$ERV)
   expect_equal(ibrier$id, 'ibrier')
   expect_equal(ibrier$label, 'IBrier')
+  expect_true(ibrier$minimize)
 
   # Integrated Brier Score (ERV version)
   ibrier_erv = ms[id == 'ibrier_erv']$measure[[1L]]
@@ -33,6 +35,7 @@ test_that('bench_msrs returns the expected measures', {
   expect_true(ibrier_erv$param_set$values$ERV)
   expect_equal(ibrier_erv$id, 'ibrier_erv')
   expect_equal(ibrier_erv$label, 'IBrier-ERV')
+  expect_false(ibrier_erv$minimize)
 
   # RCLL
   rcll = ms[id == 'rcll']$measure[[1L]]
@@ -41,6 +44,7 @@ test_that('bench_msrs returns the expected measures', {
   expect_false(rcll$param_set$values$ERV)
   expect_equal(rcll$id, 'rcll')
   expect_equal(rcll$label, 'RCLL')
+  expect_true(rcll$minimize)
 
   # RCLL (ERV version)
   rcll_erv = ms[id == 'rcll_erv']$measure[[1L]]
@@ -49,6 +53,7 @@ test_that('bench_msrs returns the expected measures', {
   expect_true(rcll_erv$param_set$values$ERV)
   expect_equal(rcll_erv$id, 'rcll_erv')
   expect_equal(rcll_erv$label, 'RCLL-ERV')
+  expect_false(rcll_erv$minimize)
 
   # check that the two C-indexes' internal ids are different
   msr_ids = sapply(ms$measure, function(measure) measure$id)
