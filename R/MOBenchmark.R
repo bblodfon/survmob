@@ -95,16 +95,18 @@ MOBenchmark = R6Class('MultiOmicsBenchmark',
     #' `train` and `test` indexes.
     #' The training/tuning is performed on the `train` set and the
     #' bootstrap testing on the `test` set for each task.
+    #' Use the [partition][mlr3::partition()] function to perform stratified
+    #' train/test splitting on the `status` indicator variable.
     #' @param lrn_ids Internal learner ids to use for benchmarking.
-    #' Default: NULL, i.e. use all available learners, see
-    #' [supported_lrn_ids()][SurvLPS].
+    #' Default is NULL, i.e. use all available learners.
+    #' See [supported_lrn_ids()][SurvLPS] for which ids can be used.
     #' @param nthreads_rsf Number of cores to use in random survival forest
     #' learners (implicit parallelization).
     #' Default: use all available cores.
     #' @param nthreads_xgb Number of cores to use in xgboost survival learners
     #' (implicit parallelization).
     #' Default: use 2 cores.
-    #' Never use only 1 core since during parallel bootstrap resampling xgboost
+    #' Never use only 1 core since during bootstrap resampling xgboost
     #' learners behave erratically in terms of CPU usage.
     #' @param tune_rsmp [Resampling][mlr3::Resampling] to use for tuning the
     #' learners on the `part$train` set.
@@ -121,12 +123,14 @@ MOBenchmark = R6Class('MultiOmicsBenchmark',
     #' @param test_nrsmps Number of bootstrap resamplings of the test set.
     #' Must be >= 1. Default: 1000.
     #' @param test_workers Number of workers for parallelization of the bootstrap
-    #' resampling on the test set. Default: 1.
-    #' This value is overridden when benchmarking xgboost learners and set to 1
-    #' to avoid strange overuse of CPU.
+    #' resampling on the test set.
+    #' This should be configured high enough based on available CPU cores.
+    #' Default is 1.
+    #' The value is temporarily overridden when benchmarking xgboost learners
+    #' and set to 1 to avoid strange overuse of CPU.
     #' @param keep_models Whether to keep the trained models after tuning.
     #' Default: FALSE.
-    #' @param quiet Whether to report elapsed timings for training and testing.
+    #' @param quiet Whether to report elapsed timings for tuning and testing.
     #' Default: TRUE (**don't** report).
     initialize = function(
       tasks, gen_task_powerset = TRUE, part, lrn_ids = NULL,

@@ -138,11 +138,13 @@ the same patient cohort. If FALSE, we use \code{tasks} as is.}
 \item{\code{part}}{List with a disjoint (common) partition of the tasks to
 \code{train} and \code{test} indexes.
 The training/tuning is performed on the \code{train} set and the
-bootstrap testing on the \code{test} set for each task.}
+bootstrap testing on the \code{test} set for each task.
+Use the \link[mlr3:partition]{partition} function to perform stratified
+train/test splitting on the \code{status} indicator variable.}
 
 \item{\code{lrn_ids}}{Internal learner ids to use for benchmarking.
-Default: NULL, i.e. use all available learners, see
-\link[=SurvLPS]{supported_lrn_ids()}.}
+Default is NULL, i.e. use all available learners.
+See \link[=SurvLPS]{supported_lrn_ids()} for which ids can be used.}
 
 \item{\code{nthreads_rsf}}{Number of cores to use in random survival forest
 learners (implicit parallelization).
@@ -151,7 +153,7 @@ Default: use all available cores.}
 \item{\code{nthreads_xgb}}{Number of cores to use in xgboost survival learners
 (implicit parallelization).
 Default: use 2 cores.
-Never use only 1 core since during parallel bootstrap resampling xgboost
+Never use only 1 core since during bootstrap resampling xgboost
 learners behave erratically in terms of CPU usage.}
 
 \item{\code{tune_rsmp}}{\link[mlr3:Resampling]{Resampling} to use for tuning the
@@ -174,14 +176,16 @@ See \code{\link[=bench_msrs]{bench_msrs()}} for available measures.}
 Must be >= 1. Default: 1000.}
 
 \item{\code{test_workers}}{Number of workers for parallelization of the bootstrap
-resampling on the test set. Default: 1.
-This value is overridden when benchmarking xgboost learners and set to 1
-to avoid strange overuse of CPU.}
+resampling on the test set.
+This should be configured high enough based on available CPU cores.
+Default is 1.
+The value is temporarily overridden when benchmarking xgboost learners
+and set to 1 to avoid strange overuse of CPU.}
 
 \item{\code{keep_models}}{Whether to keep the trained models after tuning.
 Default: FALSE.}
 
-\item{\code{quiet}}{Whether to report elapsed timings for training and testing.
+\item{\code{quiet}}{Whether to report elapsed timings for tuning and testing.
 Default: TRUE (\strong{don't} report).}
 }
 \if{html}{\out{</div>}}
