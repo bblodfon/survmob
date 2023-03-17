@@ -107,7 +107,7 @@ SurvLPS = R6Class('SurvLPS',
     #'
     #' @return a [data.table::data.table] with 3 columns:
     #' 1. `id`: learner id
-    #' 2. `learner`: an [mlr3proba::LearnerSurv] object
+    #' 2. `learner`: a [mlr3proba::LearnerSurv] object
     #' 3. `param_set`: a [paradox::ParamSet] object to be used for tuning each
     #' respective survival learner
     lrn_tbl = function() {
@@ -142,8 +142,12 @@ SurvLPS = R6Class('SurvLPS',
     #' done by default from the respective packages - we don't change anything)
     #' - The `SurvivalTree`, `CoxNet`, `XGBoostCox` and `XGBoostAFT` learners
     #' return a `distr` prediction by transforming it from the `crank`
-    #' prediction (the latter being equal to `lp` if the learner returns it)
-    #' using the [mlr3proba::distrcompositor].
+    #' prediction (the latter being equal to `lp` if the learner returns it).
+    #' This is done using the [distrcompositor][mlr3proba::distrcompositor]
+    #' pipeline with **Kaplan-Meier estimator** and a **proportional hazards**
+    #' form for the composed survival distribution.
+    #' In the case of `XGBoostAFT` learners, we use an **accelerated failure
+    #' time** distribution form.
     lrns = function() {
       lrn_ids = private$.ids # user-specified, filtered at initialization
       nthreads_rsf = self$nthreads_rsf

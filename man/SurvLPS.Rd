@@ -157,7 +157,7 @@ data table of available survival learners and tuning parameters for each.
 a \link[data.table:data.table]{data.table::data.table} with 3 columns:
 \enumerate{
 \item \code{id}: learner id
-\item \code{learner}: an \link[mlr3proba:LearnerSurv]{mlr3proba::LearnerSurv} object
+\item \code{learner}: a \link[mlr3proba:LearnerSurv]{mlr3proba::LearnerSurv} object
 \item \code{param_set}: a \link[paradox:ParamSet]{paradox::ParamSet} object to be used for tuning each
 respective survival learner
 }
@@ -181,8 +181,12 @@ transformation on the \code{lp} prediction using the Breslow estimator (as is
 done by default from the respective packages - we don't change anything)
 \item The \code{SurvivalTree}, \code{CoxNet}, \code{XGBoostCox} and \code{XGBoostAFT} learners
 return a \code{distr} prediction by transforming it from the \code{crank}
-prediction (the latter being equal to \code{lp} if the learner returns it)
-using the \link[mlr3proba:mlr_graphs_distrcompositor]{mlr3proba::distrcompositor}.
+prediction (the latter being equal to \code{lp} if the learner returns it).
+This is done using the \link[mlr3proba:mlr_graphs_distrcompositor]{distrcompositor}
+pipeline with \strong{Kaplan-Meier estimator} and a \strong{proportional hazards}
+form for the composed survival distribution.
+In the case of \code{XGBoostAFT} learners, we use an \strong{accelerated failure
+time} distribution form.
 }
 }
 
