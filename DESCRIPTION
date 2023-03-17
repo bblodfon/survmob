@@ -13,7 +13,7 @@ Imports:
     mlr3 (>= 0.14.1),
     mlr3proba (>= 0.5.2),
     mlr3pipelines (>= 0.4.2),
-    mlr3tuning (>= 0.17.2),
+    mlr3tuning (>= 0.18.0),
     mlr3extralearners (>= 0.6.0),
     mlr3misc (>= 0.11.0),
     mlr3fselect (>= 0.10.0),
