@@ -12,7 +12,7 @@
 #' s = SurvLPS$new(nthreads_rsf = 4)
 #'
 #' # All available learner ids
-#' s$lrn_ids()
+#' s$supported_lrn_ids()
 #'
 #' # Get all parameter spaces
 #' pss = s$pss()
@@ -34,9 +34,9 @@
 #' s$initialize(ids = c('coxnet', 'coxboost'))
 #' s$lrns()
 #'
-#' # Get a convenient data table format
-#' dt = s$lrn_tbl()
-#' dt
+#' # Convenient data table with learner ids,
+#' # learner objects and parameter spaces
+#' s$lrn_tbl()
 #'
 #' @export
 SurvLPS = R6Class('SurvLPS',
@@ -86,7 +86,7 @@ SurvLPS = R6Class('SurvLPS',
 
     #' @description Supported Survival Learners IDs
     #' @return (`character()`)\cr
-    #' A vector of ALL available survival learner ids
+    #' A vector of ALL available survival learner ids (see example)
     supported_lrn_ids = function() {
       private$.lrn_ids
     },

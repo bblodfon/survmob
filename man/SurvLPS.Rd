@@ -16,7 +16,7 @@ library(mlr3extralearners)
 s = SurvLPS$new(nthreads_rsf = 4)
 
 # All available learner ids
-s$lrn_ids()
+s$supported_lrn_ids()
 
 # Get all parameter spaces
 pss = s$pss()
@@ -38,9 +38,9 @@ pss$xgboost_aft_reg
 s$initialize(ids = c('coxnet', 'coxboost'))
 s$lrns()
 
-# Get a convenient data table format
-dt = s$lrn_tbl()
-dt
+# Convenient data table with learner ids,
+# learner objects and parameter spaces
+s$lrn_tbl()
 
 }
 \section{Public fields}{
@@ -120,7 +120,7 @@ Supported Survival Learners IDs
 
 \subsection{Returns}{
 (\code{character()})\cr
-A vector of ALL available survival learner ids
+A vector of ALL available survival learner ids (see example)
 }
 }
 \if{html}{\out{<hr>}}
