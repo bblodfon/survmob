@@ -41,6 +41,9 @@ test_that('task_powerset works', {
   # check 1-element list
   expect_error(task_powerset(tasks[1]))
 
+  # targets are not the same
+  expect_error(task_powerset(tasks, check_targets = TRUE))
+
   # test tasks with exactly the same targets
   time  = 1:5
   status = c(1,1,0,0,1)

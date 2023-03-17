@@ -67,8 +67,9 @@ task_powerset = function(tasks, check_targets = TRUE) {
         cols = tasks[[tsk_index + 1]]$target_names
       )
       # ?all.equal.data.table
-      if (!all.equal(truth1, truth2)) {
-        stop('Target values must be the same')
+      res = all.equal(truth1, truth2, check.attributes = FALSE)
+      if (class(res) == 'character') {
+        stop('Target values must be the same! ', res)
       }
     }
   }
