@@ -237,7 +237,7 @@ MOBenchmark = R6Class('MultiOmicsBenchmark',
       )
       bench_num = nrow(bench_grid)
 
-      message('Learners: ', nrow(lrn_tbl))
+      message('\nLearners: ', nrow(lrn_tbl))
       message('Tasks: ', length(task_ids))
       message('Benchmarks: ', bench_num)
 
