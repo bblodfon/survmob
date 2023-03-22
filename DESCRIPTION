@@ -8,7 +8,7 @@ Description: Several functions for benchmarking survival models using the mlr3 f
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 Imports: 
     mlr3 (>= 0.15.0),
     mlr3proba (>= 0.5.2),
