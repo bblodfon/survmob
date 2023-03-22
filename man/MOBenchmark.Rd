@@ -96,17 +96,17 @@ tuning}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-MultiOmicsBenchmark-new}{\code{MOBenchmark$new()}}
-\item \href{#method-MultiOmicsBenchmark-run}{\code{MOBenchmark$run()}}
-\item \href{#method-MultiOmicsBenchmark-tune_learner}{\code{MOBenchmark$tune_learner()}}
-\item \href{#method-MultiOmicsBenchmark-drop_tasks}{\code{MOBenchmark$drop_tasks()}}
-\item \href{#method-MultiOmicsBenchmark-drop_models}{\code{MOBenchmark$drop_models()}}
-\item \href{#method-MultiOmicsBenchmark-clone}{\code{MOBenchmark$clone()}}
+\item \href{#method-MOBenchmark-new}{\code{MOBenchmark$new()}}
+\item \href{#method-MOBenchmark-run}{\code{MOBenchmark$run()}}
+\item \href{#method-MOBenchmark-tune_learner}{\code{MOBenchmark$tune_learner()}}
+\item \href{#method-MOBenchmark-drop_tasks}{\code{MOBenchmark$drop_tasks()}}
+\item \href{#method-MOBenchmark-drop_models}{\code{MOBenchmark$drop_models()}}
+\item \href{#method-MOBenchmark-clone}{\code{MOBenchmark$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MultiOmicsBenchmark-new"></a>}}
-\if{latex}{\out{\hypertarget{method-MultiOmicsBenchmark-new}{}}}
+\if{html}{\out{<a id="method-MOBenchmark-new"></a>}}
+\if{latex}{\out{\hypertarget{method-MOBenchmark-new}{}}}
 \subsection{Method \code{new()}}{
 Creates a new instance of this \link[R6:R6Class]{R6} class.
 \subsection{Usage}{
@@ -199,8 +199,8 @@ Default: TRUE (\strong{don't} report).}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MultiOmicsBenchmark-run"></a>}}
-\if{latex}{\out{\hypertarget{method-MultiOmicsBenchmark-run}{}}}
+\if{html}{\out{<a id="method-MOBenchmark-run"></a>}}
+\if{latex}{\out{\hypertarget{method-MOBenchmark-run}{}}}
 \subsection{Method \code{run()}}{
 Execute benchmark
 \subsection{Usage}{
@@ -233,8 +233,8 @@ a \link{tibble} with columns:
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MultiOmicsBenchmark-tune_learner"></a>}}
-\if{latex}{\out{\hypertarget{method-MultiOmicsBenchmark-tune_learner}{}}}
+\if{html}{\out{<a id="method-MOBenchmark-tune_learner"></a>}}
+\if{latex}{\out{\hypertarget{method-MOBenchmark-tune_learner}{}}}
 \subsection{Method \code{tune_learner()}}{
 Tune \code{learner} on the \code{given} task.
 The tuning is done on the train set of the task (parameter \code{part}),
@@ -267,8 +267,8 @@ If \code{NULL}, we just \code{train} the learner on the \code{task}.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MultiOmicsBenchmark-drop_tasks"></a>}}
-\if{latex}{\out{\hypertarget{method-MultiOmicsBenchmark-drop_tasks}{}}}
+\if{html}{\out{<a id="method-MOBenchmark-drop_tasks"></a>}}
+\if{latex}{\out{\hypertarget{method-MOBenchmark-drop_tasks}{}}}
 \subsection{Method \code{drop_tasks()}}{
 remove tasks from the class object to reduce size
 \subsection{Usage}{
@@ -277,8 +277,8 @@ remove tasks from the class object to reduce size
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MultiOmicsBenchmark-drop_models"></a>}}
-\if{latex}{\out{\hypertarget{method-MultiOmicsBenchmark-drop_models}{}}}
+\if{html}{\out{<a id="method-MOBenchmark-drop_models"></a>}}
+\if{latex}{\out{\hypertarget{method-MOBenchmark-drop_models}{}}}
 \subsection{Method \code{drop_models()}}{
 remove models from result tibble to reduce size
 \subsection{Usage}{
@@ -287,8 +287,8 @@ remove models from result tibble to reduce size
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MultiOmicsBenchmark-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-MultiOmicsBenchmark-clone}{}}}
+\if{html}{\out{<a id="method-MOBenchmark-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-MOBenchmark-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

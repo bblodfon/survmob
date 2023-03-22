@@ -74,7 +74,7 @@
 #' efs$res_plot(type = 'stab', task = task)
 #'
 #' @export
-eFS = R6Class('EnsembleFeatureSelection',
+eFS = R6Class('eFS',
   public = list(
     #' @field task_id (`character(1)`)\cr
     #' Task id

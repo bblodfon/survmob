@@ -1,9 +1,9 @@
-test_that('BootRes works', {
-  expect_error(BootRes$new(test_nrsmps = 1)) # too low
-  expect_error(BootRes$new(test_measure_ids = 'NonId'))
-  expect_error(BootRes$new(test_workers = 0)) # too low
+test_that('BootstrapResult works', {
+  expect_error(BootstrapResult$new(test_nrsmps = 1)) # too low
+  expect_error(BootstrapResult$new(test_measure_ids = 'NonId'))
+  expect_error(BootstrapResult$new(test_workers = 0)) # too low
 
-  boot_res = BootRes$new(test_nrsmps = 2)
+  boot_res = BootstrapResult$new(test_nrsmps = 2)
 
   # Initialization ----
   expect_equal(length(boot_res$test_measure_ids), 7)
@@ -55,7 +55,7 @@ test_that('BootRes works', {
   expect_equal(dim(boot_res$percent_ci()), c(2,8))
 
   # 1 measure ----
-  boot_res2 = BootRes$new(test_nrsmps = 2, test_measure_ids = 'rcll')
+  boot_res2 = BootstrapResult$new(test_nrsmps = 2, test_measure_ids = 'rcll')
   boot_res2$calculate(task = taskv, learner = cox, part = part)
   expect_class(boot_res2$scores, 'tbl_df')
   expect_numeric(boot_res2$scores$rcll)

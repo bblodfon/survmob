@@ -53,7 +53,7 @@
 #' mob$result
 #'
 #' @export
-MOBenchmark = R6Class('MultiOmicsBenchmark',
+MOBenchmark = R6Class('MOBenchmark',
   public = list(
     #' @field tasks Survival datasets to benchmark
     tasks = NULL,
@@ -273,7 +273,7 @@ MOBenchmark = R6Class('MultiOmicsBenchmark',
 
         # test learner
         message('Bootstrap Testing')
-        br = BootRes$new(
+        br = BootstrapResult$new(
           test_measure_ids = self$test_measure_ids,
           test_workers = test_workers,
           test_nrsmps = self$test_nrsmps

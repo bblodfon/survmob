@@ -119,21 +119,21 @@ A \link{tibble} with the results from the eFS (see \code{run()} method)}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-EnsembleFeatureSelection-new}{\code{eFS$new()}}
-\item \href{#method-EnsembleFeatureSelection-supported_lrn_ids}{\code{eFS$supported_lrn_ids()}}
-\item \href{#method-EnsembleFeatureSelection-rfe_info}{\code{eFS$rfe_info()}}
-\item \href{#method-EnsembleFeatureSelection-run}{\code{eFS$run()}}
-\item \href{#method-EnsembleFeatureSelection-fs_stats}{\code{eFS$fs_stats()}}
-\item \href{#method-EnsembleFeatureSelection-stab}{\code{eFS$stab()}}
-\item \href{#method-EnsembleFeatureSelection-ffs_plot}{\code{eFS$ffs_plot()}}
-\item \href{#method-EnsembleFeatureSelection-res_plot}{\code{eFS$res_plot()}}
-\item \href{#method-EnsembleFeatureSelection-help}{\code{eFS$help()}}
-\item \href{#method-EnsembleFeatureSelection-clone}{\code{eFS$clone()}}
+\item \href{#method-eFS-new}{\code{eFS$new()}}
+\item \href{#method-eFS-supported_lrn_ids}{\code{eFS$supported_lrn_ids()}}
+\item \href{#method-eFS-rfe_info}{\code{eFS$rfe_info()}}
+\item \href{#method-eFS-run}{\code{eFS$run()}}
+\item \href{#method-eFS-fs_stats}{\code{eFS$fs_stats()}}
+\item \href{#method-eFS-stab}{\code{eFS$stab()}}
+\item \href{#method-eFS-ffs_plot}{\code{eFS$ffs_plot()}}
+\item \href{#method-eFS-res_plot}{\code{eFS$res_plot()}}
+\item \href{#method-eFS-help}{\code{eFS$help()}}
+\item \href{#method-eFS-clone}{\code{eFS$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-EnsembleFeatureSelection-new"></a>}}
-\if{latex}{\out{\hypertarget{method-EnsembleFeatureSelection-new}{}}}
+\if{html}{\out{<a id="method-eFS-new"></a>}}
+\if{latex}{\out{\hypertarget{method-eFS-new}{}}}
 \subsection{Method \code{new()}}{
 Creates a new instance of this \link[R6:R6Class]{R6} class.
 \subsection{Usage}{
@@ -225,8 +225,8 @@ See \code{rfe_info()} for more details.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-EnsembleFeatureSelection-supported_lrn_ids"></a>}}
-\if{latex}{\out{\hypertarget{method-EnsembleFeatureSelection-supported_lrn_ids}{}}}
+\if{html}{\out{<a id="method-eFS-supported_lrn_ids"></a>}}
+\if{latex}{\out{\hypertarget{method-eFS-supported_lrn_ids}{}}}
 \subsection{Method \code{supported_lrn_ids()}}{
 Returns a vector of internal ids corresponding to the
 random survival forest learners that can be used in method \code{run()}
@@ -236,8 +236,8 @@ random survival forest learners that can be used in method \code{run()}
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-EnsembleFeatureSelection-rfe_info"></a>}}
-\if{latex}{\out{\hypertarget{method-EnsembleFeatureSelection-rfe_info}{}}}
+\if{html}{\out{<a id="method-eFS-rfe_info"></a>}}
+\if{latex}{\out{\hypertarget{method-eFS-rfe_info}{}}}
 \subsection{Method \code{rfe_info()}}{
 Returns the feature subset sizes that the RFE algorithm
 will use and the corresponding \code{mtry} values for the
@@ -267,8 +267,8 @@ a \link{tibble} with columns \code{subset_size} and \code{mtry}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-EnsembleFeatureSelection-run"></a>}}
-\if{latex}{\out{\hypertarget{method-EnsembleFeatureSelection-run}{}}}
+\if{html}{\out{<a id="method-eFS-run"></a>}}
+\if{latex}{\out{\hypertarget{method-eFS-run}{}}}
 \subsection{Method \code{run()}}{
 Runs the ensemble feature selection on the given task.
 \subsection{Usage}{
@@ -312,8 +312,8 @@ a tibble with columns:
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-EnsembleFeatureSelection-fs_stats"></a>}}
-\if{latex}{\out{\hypertarget{method-EnsembleFeatureSelection-fs_stats}{}}}
+\if{html}{\out{<a id="method-eFS-fs_stats"></a>}}
+\if{latex}{\out{\hypertarget{method-eFS-fs_stats}{}}}
 \subsection{Method \code{fs_stats()}}{
 Frequency selection statistics (feature ranking).
 This function uses the best feature sets found by RFE
@@ -336,8 +336,8 @@ subsets across all RFE runs?
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-EnsembleFeatureSelection-stab"></a>}}
-\if{latex}{\out{\hypertarget{method-EnsembleFeatureSelection-stab}{}}}
+\if{html}{\out{<a id="method-eFS-stab"></a>}}
+\if{latex}{\out{\hypertarget{method-eFS-stab}{}}}
 \subsection{Method \code{stab()}}{
 Stability assessment of the ensemble feature selection.
 Currently two stability metrics are supported via the \link{stabm} R package,
@@ -366,8 +366,8 @@ used).
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-EnsembleFeatureSelection-ffs_plot"></a>}}
-\if{latex}{\out{\hypertarget{method-EnsembleFeatureSelection-ffs_plot}{}}}
+\if{html}{\out{<a id="method-eFS-ffs_plot"></a>}}
+\if{latex}{\out{\hypertarget{method-eFS-ffs_plot}{}}}
 \subsection{Method \code{ffs_plot()}}{
 Feature selection frequency barplot
 \subsection{Usage}{
@@ -389,8 +389,8 @@ frequency}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-EnsembleFeatureSelection-res_plot"></a>}}
-\if{latex}{\out{\hypertarget{method-EnsembleFeatureSelection-res_plot}{}}}
+\if{html}{\out{<a id="method-eFS-res_plot"></a>}}
+\if{latex}{\out{\hypertarget{method-eFS-res_plot}{}}}
 \subsection{Method \code{res_plot()}}{
 Produce various plots of the eFS results
 \subsection{Usage}{
@@ -441,8 +441,8 @@ by default) decided by the value of \code{stab_metrics}.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-EnsembleFeatureSelection-help"></a>}}
-\if{latex}{\out{\hypertarget{method-EnsembleFeatureSelection-help}{}}}
+\if{html}{\out{<a id="method-eFS-help"></a>}}
+\if{latex}{\out{\hypertarget{method-eFS-help}{}}}
 \subsection{Method \code{help()}}{
 Opens the help page for this object.
 \subsection{Usage}{
@@ -451,8 +451,8 @@ Opens the help page for this object.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-EnsembleFeatureSelection-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-EnsembleFeatureSelection-clone}{}}}
+\if{html}{\out{<a id="method-eFS-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-eFS-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

@@ -1,4 +1,4 @@
-#' @title Bootstrap Result Class
+#' @title Bootstrap Result
 #'
 #' @description Use this class to measure the performance of a survival learner
 #' on a test dataset using bootstrapping.
@@ -25,24 +25,24 @@
 #' # bootstrap the test set 10 times and measure performance
 #' # using all available test metrics from `bench_msrs()`
 #' # can be parallelized by increasing `test_workers`
-#' brs = BootRes$new(test_nrsmps = 10)
-#' brs$calculate(task = task, learner = cox, part = part)
+#' bres = BootstrapResult$new(test_nrsmps = 10)
+#' bres$calculate(task = task, learner = cox, part = part)
 #'
 #' # performance on the test set
-#' brs$score
+#' bres$score
 #'
 #' # bootstrapped performance scores
-#' brs$scores
+#' bres$scores
 #'
 #' # Median summary score per metric
-#' brs$score_median()
+#' bres$score_median()
 #'
 #' # Percentile Confidence Intervals
-#' brs$percent_ci()
-#' brs$percent_ci(conf = 0.9)
+#' bres$percent_ci()
+#' bres$percent_ci(conf = 0.9)
 #'
 #' @export
-BootRes = R6Class('BootstrapResult',
+BootstrapResult = R6Class('BootstrapResult',
   public = list(
     #' @field task_id Task id
     task_id = NULL,
