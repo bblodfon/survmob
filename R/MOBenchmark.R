@@ -351,7 +351,7 @@ MOBenchmark = R6Class('MOBenchmark',
         measure = measure,
         search_space = search_space,
         terminator = trm('evals', n_evals = self$tune_nevals),
-        tuner = tnr('mbo', result_function = result_by_default),
+        tuner = tnr('mbo'),
         callbacks = callbacks
       )
 
