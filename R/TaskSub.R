@@ -1,13 +1,13 @@
-#' @title Subset tasks class
+#' @title Subset tasks after eFS
 #'
 #' @description Subset (survival) tasks to the most stable features identified
 #' by the ensemble feature approach ([eFS]).
 #' For a summary table of the number of features that can be selected via
-#' various methods for cutoffs, etc. see `feat_stats()` and for actually
-#' subsetting the tasks, see `subset_tasks()`.
+#' various methods for cutoffs see `feat_stats()`.
+#' For actually subsetting the tasks, see `subset_tasks()`.
 #'
 #' @export
-TaskSub = R6Class('FSTaskSubsettor',
+TaskSub = R6Class('TaskSub',
   public = list(
     #' @field nfeats (`numeric(1)`)\cr
     #' Top N features

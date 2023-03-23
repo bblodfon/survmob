@@ -2,13 +2,13 @@
 % Please edit documentation in R/TaskSub.R
 \name{TaskSub}
 \alias{TaskSub}
-\title{Subset tasks class}
+\title{Subset tasks after eFS}
 \description{
 Subset (survival) tasks to the most stable features identified
 by the ensemble feature approach (\link{eFS}).
 For a summary table of the number of features that can be selected via
-various methods for cutoffs, etc. see \code{feat_stats()} and for actually
-subsetting the tasks, see \code{subset_tasks()}.
+various methods for cutoffs see \code{feat_stats()}.
+For actually subsetting the tasks, see \code{subset_tasks()}.
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
@@ -30,16 +30,16 @@ Max #features}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-FSTaskSubsettor-new}{\code{TaskSub$new()}}
-\item \href{#method-FSTaskSubsettor-summary_stats}{\code{TaskSub$summary_stats()}}
-\item \href{#method-FSTaskSubsettor-subset_tasks}{\code{TaskSub$subset_tasks()}}
-\item \href{#method-FSTaskSubsettor-help}{\code{TaskSub$help()}}
-\item \href{#method-FSTaskSubsettor-clone}{\code{TaskSub$clone()}}
+\item \href{#method-TaskSub-new}{\code{TaskSub$new()}}
+\item \href{#method-TaskSub-summary_stats}{\code{TaskSub$summary_stats()}}
+\item \href{#method-TaskSub-subset_tasks}{\code{TaskSub$subset_tasks()}}
+\item \href{#method-TaskSub-help}{\code{TaskSub$help()}}
+\item \href{#method-TaskSub-clone}{\code{TaskSub$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-FSTaskSubsettor-new"></a>}}
-\if{latex}{\out{\hypertarget{method-FSTaskSubsettor-new}{}}}
+\if{html}{\out{<a id="method-TaskSub-new"></a>}}
+\if{latex}{\out{\hypertarget{method-TaskSub-new}{}}}
 \subsection{Method \code{new()}}{
 Creates a new instance of this \link[R6:R6Class]{R6} class.
 \subsection{Usage}{
@@ -61,8 +61,8 @@ Creates a new instance of this \link[R6:R6Class]{R6} class.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-FSTaskSubsettor-summary_stats"></a>}}
-\if{latex}{\out{\hypertarget{method-FSTaskSubsettor-summary_stats}{}}}
+\if{html}{\out{<a id="method-TaskSub-summary_stats"></a>}}
+\if{latex}{\out{\hypertarget{method-TaskSub-summary_stats}{}}}
 \subsection{Method \code{summary_stats()}}{
 Summary table with the number of features that can be
 selected based on available methods. See \code{subset_tasks()} for more
@@ -113,8 +113,8 @@ column named \code{optim_nfeats}, see \code{subset_tasks()} for more info.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-FSTaskSubsettor-subset_tasks"></a>}}
-\if{latex}{\out{\hypertarget{method-FSTaskSubsettor-subset_tasks}{}}}
+\if{html}{\out{<a id="method-TaskSub-subset_tasks"></a>}}
+\if{latex}{\out{\hypertarget{method-TaskSub-subset_tasks}{}}}
 \subsection{Method \code{subset_tasks()}}{
 Subset tasks (i.e. reduce the number of features) based on
 the corresponding consensus feature selection results (eFS)
@@ -172,8 +172,8 @@ frequently selected features based on the consensus eFS results
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-FSTaskSubsettor-help"></a>}}
-\if{latex}{\out{\hypertarget{method-FSTaskSubsettor-help}{}}}
+\if{html}{\out{<a id="method-TaskSub-help"></a>}}
+\if{latex}{\out{\hypertarget{method-TaskSub-help}{}}}
 \subsection{Method \code{help()}}{
 Opens the help page for this object.
 \subsection{Usage}{
@@ -182,8 +182,8 @@ Opens the help page for this object.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-FSTaskSubsettor-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-FSTaskSubsettor-clone}{}}}
+\if{html}{\out{<a id="method-TaskSub-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-TaskSub-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{
