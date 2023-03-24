@@ -343,7 +343,7 @@ SurvLPS = R6Class('SurvLPS',
         } else if (lrn_id == 'coxboost') { # CoxBoost
           paradox::ps(
             # up to 500 to minimize overfitting (if possible)
-            stepno = p_int(50, 500),
+            stepno = p_int(10, 500),
             # default is => 9 * sum(status == 1)
             penalty = p_int(10, 1000, logscale = TRUE),
             # default is => 1
