@@ -6,9 +6,12 @@
 #' [mlr_pipeops_featureunion][mlr3pipelines::mlr_pipeops_featureunion].
 #' Every task in the given list must have:
 #'
-#' - **Different feature names and task ids**
-#' - Same target names (target columns only from the first task are kept)
-#' - Same number of observations/rows
+#' - **Different** feature names and task ids
+#' - **Same** target names
+#' - **Same** number of observations/rows
+#'
+#' @details Only the target columns from the first task of a combination are
+#' kept and also properties such as `stratum`.
 #'
 #' @param tasks list of [Tasks][mlr3::Task]
 #' @param check_targets logical (Default: TRUE).
@@ -25,7 +28,7 @@
 #' d2 = data.frame(status = status, time = time, a2 = LETTERS[1:5], b2 = rep(1,5))
 #' d3 = data.frame(status = status, time = time, a3 = LETTERS[1:5], b3 = rep(1,5))
 #'
-#'  # survival tasks
+#' # survival tasks
 #' task1 = as_task_surv(x = d1, time = 'time', event = 'status')
 #' task2 = as_task_surv(x = d2, time = 'time', event = 'status')
 #' task3 = as_task_surv(x = d3, time = 'time', event = 'status')

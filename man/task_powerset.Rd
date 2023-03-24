@@ -20,10 +20,14 @@ respective features via
 \link[mlr3pipelines:mlr_pipeops_featureunion]{mlr_pipeops_featureunion}.
 Every task in the given list must have:
 \itemize{
-\item \strong{Different feature names and task ids}
-\item Same target names (target columns only from the first task are kept)
-\item Same number of observations/rows
+\item \strong{Different} feature names and task ids
+\item \strong{Same} target names
+\item \strong{Same} number of observations/rows
 }
+}
+\details{
+Only the target columns from the first task of a combination are
+kept and also properties such as \code{stratum}.
 }
 \examples{
 library(mlr3proba)
@@ -35,7 +39,7 @@ d1 = data.frame(status = status, time = time, a1 = LETTERS[1:5], b1 = rep(1,5))
 d2 = data.frame(status = status, time = time, a2 = LETTERS[1:5], b2 = rep(1,5))
 d3 = data.frame(status = status, time = time, a3 = LETTERS[1:5], b3 = rep(1,5))
 
- # survival tasks
+# survival tasks
 task1 = as_task_surv(x = d1, time = 'time', event = 'status')
 task2 = as_task_surv(x = d2, time = 'time', event = 'status')
 task3 = as_task_surv(x = d3, time = 'time', event = 'status')
