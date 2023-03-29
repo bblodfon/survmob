@@ -323,8 +323,8 @@ SurvLPS = R6Class('SurvLPS',
             num.trees = p_int(100, 1500),
             mtry.ratio = p_dbl(0.1, 0.9),
             min.node.size = p_int(3, 20),
-            alpha = p_fct(c(0.1, 0.3, 0.5, 0.7, 0.9)),
-            minprop = p_fct(c(0, 0.1, 0.25, 0.4))
+            alpha = p_dbl(0.1, 0.9),
+            minprop = p_dbl(0, 0.4)
           )
         } else if (lrn_id == 'rsf_extratrees') {
           paradox::ps(
