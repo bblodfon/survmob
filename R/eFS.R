@@ -354,27 +354,40 @@ eFS = R6Class('eFS',
         )
 
         part = partition(task, ratio = self$subsample_ratio, stratify = TRUE)
-        at$train(task, row_ids = part$train)
 
-        selected_features = at$fselect_instance$result_feature_set
-        nfeatures = length(selected_features)
-        score = at$archive$best()[[measure$id]]
+        # envelop in try/catch in case something goes wrong
+        tryCatch(
+          {
+            at$train(task, row_ids = part$train)
 
-        result[[index]] = tibble(
-          lrn_id = lrn_id,
-          iter   = iter,
-          selected_features = list(selected_features),
-          nfeatures = nfeatures,
-          score = score
+            selected_features = at$fselect_instance$result_feature_set
+            nfeatures = length(selected_features)
+            score = at$archive$best()[[measure$id]]
+
+            result[[index]] = tibble(
+              lrn_id = lrn_id,
+              iter   = iter,
+              selected_features = list(selected_features),
+              nfeatures = nfeatures,
+              score = score
+            )
+
+            if (store_archive) {
+              result[[index]] = tibble(
+                result[[index]],
+                archive = list(at$archive)
+              )
+            }
+          },
+          error = function(e) {
+            message('### Error ###')
+            print(e)
+          },
+          warning = function(w) {
+            message('### Warning ###')
+            print(w)
+          }
         )
-
-        if (store_archive) {
-          result[[index]] = tibble(
-            result[[index]],
-            archive = list(at$archive)
-          )
-        }
-        # store/save intermediate result[[index]] somehow?
       }
 
       res = bind_rows(result)
