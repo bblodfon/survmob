@@ -378,14 +378,8 @@ eFS = R6Class('eFS',
                 archive = list(at$archive)
               )
             }
-          },
-          error = function(e) {
-            message('### Error ###')
-            print(e)
-          },
-          warning = function(w) {
-            message('### Warning ###')
-            print(w)
+          }, error = function(e) {
+            message('### Error: ', e$message)
           }
         )
       }
