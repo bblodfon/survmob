@@ -105,8 +105,8 @@ test_that('run() works', {
   expect_class(result, 'tbl')
   # check output tibble has correct properties
   expect_equal(dim(result), c(1,6))
-  expect_equal(colnames(result), c('lrn_id', 'iter', 'selected_features',
-                                   'nfeatures', 'score', 'archive'))
+  expect_equal(colnames(result),
+    c('lrn_id', 'iter', 'selected_features', 'nfeatures', 'score', 'archive'))
 
   # RFE: check subset_size and mtry are correct
   arch = efs$result$archive[[1]]

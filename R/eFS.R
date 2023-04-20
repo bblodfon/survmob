@@ -322,10 +322,9 @@ eFS = R6Class('eFS',
 
       # eFS
       # make grid of RFE runs
-      rfe_grid = full_join(
+      rfe_grid = cross_join(
         tibble(lrn_id = self$lrn_ids),
-        tibble(iter   = 1:self$repeats),
-        by = character()
+        tibble(iter   = 1:self$repeats)
       )
       if (verbose) {
         message(length(self$lrn_ids), ' RSF learner(s) x ',

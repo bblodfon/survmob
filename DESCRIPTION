@@ -1,6 +1,6 @@
 Package: survmob
 Title: Survival Multi-Omics Benchmarking
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: 
     person("John", "Zobolas", , "bblodfon@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-3609-8674"))
@@ -23,7 +23,7 @@ Imports:
     parallelly,
     data.table,
     tibble,
-    dplyr,
+    dplyr (> 1.1.0),
     checkmate,
     lgr,
     survival,
