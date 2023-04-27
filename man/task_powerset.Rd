@@ -27,7 +27,8 @@ Every task in the given list must have:
 }
 \details{
 Only the target columns from the first task of a combination are
-kept and also properties such as \code{stratum}.
+kept. You need to add the \code{stratum} property to \strong{all input tasks} if you
+want every possible task combination to have it as well.
 }
 \examples{
 library(mlr3proba)

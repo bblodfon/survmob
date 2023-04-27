@@ -11,7 +11,8 @@
 #' - **Same** number of observations/rows
 #'
 #' @details Only the target columns from the first task of a combination are
-#' kept and also properties such as `stratum`.
+#' kept. You need to add the `stratum` property to **all input tasks** if you
+#' want every possible task combination to have it as well.
 #'
 #' @param tasks list of [Tasks][mlr3::Task]
 #' @param check_targets logical (Default: TRUE).
