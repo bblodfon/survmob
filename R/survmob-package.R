@@ -36,7 +36,6 @@
 #' @importFrom mlr3fselect AutoFSelector
 #' @importFrom mlr3fselect callback_fselect
 #' @importFrom mlr3fselect fs
-#' @importFrom mlr3mbo result_by_default
 #' @importFrom mlr3misc map_chr
 #' @importFrom mlr3misc map_dbl
 #' @importFrom mlr3misc open_help
