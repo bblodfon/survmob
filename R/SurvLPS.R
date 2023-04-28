@@ -224,6 +224,7 @@ SurvLPS = R6Class('SurvLPS',
               id = 'ObliqueSurvivalForestFast',
               label = 'Accelerated Oblique Random Forest',
               fallback = lrn('surv.kaplan'),
+              encapsulate = c(train = 'callr', predict = 'callr'),
               control_type = 'fast',
               oobag_pred_type = 'surv',
               importance = 'anova', # very fast, leave it as it is for now
