@@ -340,7 +340,8 @@ eFS = R6Class('eFS',
 
         if (verbose) {
           message('### Learner: ', learner$id, ' (', iter, '/',
-            self$repeats, '), Iter: ', index, '/', nrow(rfe_grid))
+            self$repeats, '), Iter: ', index, '/', nrow(rfe_grid),
+            '(', round(100*index/nrow(rfe_grid), digits = 1), ')')
         }
 
         at = AutoFSelector$new(
