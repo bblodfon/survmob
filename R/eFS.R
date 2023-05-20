@@ -322,10 +322,12 @@ eFS = R6Class('eFS',
 
       # eFS
       # make grid of RFE runs
-      rfe_grid = cross_join(
+      rfe_grid = dplyr::cross_join(
         tibble(lrn_id = self$lrn_ids),
         tibble(iter   = 1:self$repeats)
       )
+
+      # initial message
       if (verbose) {
         message(length(self$lrn_ids), ' RSF learner(s) x ',
                 self$repeats, ' repeats')
@@ -341,7 +343,7 @@ eFS = R6Class('eFS',
         if (verbose) {
           message('### Learner: ', learner$id, ' (', iter, '/',
             self$repeats, '), Iter: ', index, '/', nrow(rfe_grid),
-            '(', round(100*index/nrow(rfe_grid), digits = 1), ')')
+            ' (', round(100*index/nrow(rfe_grid), digits = 1), '%)')
         }
 
         at = AutoFSelector$new(
@@ -349,8 +351,8 @@ eFS = R6Class('eFS',
           resampling = self$resampling,
           measure = measure,
           terminator = trm('none'),
-          fselector = fs('rfe', n_features       = self$n_features,
-                                feature_fraction = self$feature_fraction),
+          fselector = fs('rfe', n_features = self$n_features,
+            feature_fraction = self$feature_fraction),
           store_models = store_archive # hacked :)
         )
 
@@ -370,21 +372,14 @@ eFS = R6Class('eFS',
               iter   = iter,
               selected_features = list(selected_features),
               nfeatures = nfeatures,
-              score = score
+              score = score,
+              archive = base::switch(store_archive, list(at$archive))
             )
-
-            if (store_archive) {
-              result[[index]] = tibble(
-                result[[index]],
-                archive = list(at$archive)
-              )
-            }
           }, error = function(e) {
             message('### Error: ', e$message)
           }
         )
       }
-
       res = bind_rows(result)
       self$result = res
       invisible(res)
@@ -528,7 +523,7 @@ eFS = R6Class('eFS',
         slice(1:top_n) %>%
         mutate(feat_name = forcats::fct_reorder(feat_name, times, .desc = FALSE)) %>%
         ggplot(aes(x = feat_name, y = freq)) +
-        geom_bar(stat = "identity", fill = '#377EB8', show.legend = FALSE) +
+        geom_bar(stat = 'identity', fill = '#377EB8', show.legend = FALSE) +
         theme_bw(base_size = 14) +
         labs(x = 'Feature name', y = 'Selection Frequency', title = title) +
         scale_y_continuous(labels = scales::label_percent()) +
