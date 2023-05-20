@@ -381,6 +381,117 @@ eFS = R6Class('eFS',
         )
       }
       res = bind_rows(result)
+
+      self$result = res
+      invisible(res)
+    },
+
+    #' @description Runs the ensemble feature selection on the given task in
+    #' parallel
+    #'
+    #' @details Same as `run()` but with the possibility to parallelize the RFE
+    #' runs.
+    #' Should be used with `progressr` and `future` libraries and it's a bit
+    #' *experimental* as this parallelization can conflict with the
+    #' parallelization of some RSF learners.
+    #' See examples.
+    #'
+    #' @param task [TaskSurv][mlr3proba::TaskSurv]
+    #' @param verbose Write log messages or not? Default: TRUE.
+    #' @param store_archive Whether to also store the
+    #' [ArchiveFSelect][mlr3fselect::ArchiveFSelect]
+    #' archive object created by `AutoFSelector`, for debugging purposes.
+    #' Default: FALSE.
+    #'
+    #' @return a tibble with columns, same as in `run()`.
+    run_parallel = function(task, verbose = TRUE, store_archive = FALSE) {
+      # task
+      assert_task(task)
+      self$task_id = task$id
+
+      # RSF learners
+      learners = private$.get_lrns()
+
+      # performance measure
+      if (self$msr_id == 'oob_error') {
+        measure = msr('oob_error')
+      } else {
+        measure = bench_msrs()[id == self$msr_id]$measure[[1L]]
+      }
+
+      # eFS
+      # make grid of RFE runs
+      rfe_grid = dplyr::cross_join(
+        tibble(lrn_id = self$lrn_ids),
+        tibble(iter   = 1:self$repeats)
+      )
+
+      # initial message
+      if (verbose) {
+        message(length(self$lrn_ids), ' RSF learner(s) x ',
+          self$repeats, ' repeats')
+        message('A total of ', nrow(rfe_grid), ' RFE runs')
+      }
+
+      # future and progressr prerequisites
+      is_sequential = inherits(plan(), 'sequential')
+      stdout = if (is_sequential) NA else TRUE
+      lgr_thres = mlr3misc::map_int(mlr_reflections$loggers, 'threshold')
+      pb = progressr::progressor(steps = nrow(rfe_grid))
+
+      res = future.apply::future_lapply(1:nrow(rfe_grid), function(index) {
+        # restore logger thresholds to avoid unnecessary logging
+        for (package in names(lgr_thres)) {
+          logger = lgr::get_logger(package)
+          threshold = lgr_thres[package]
+          logger$set_threshold(threshold)
+        }
+
+        lrn_id = rfe_grid[index,]$lrn_id
+        learner = learners[[lrn_id]]$reset() # un-train
+        iter = rfe_grid[index,]$iter
+
+        if (verbose) {
+          pb(sprintf('%s (%i/%i)', learner$id, iter, self$repeats))
+        }
+
+        at = AutoFSelector$new(
+          learner = learner,
+          resampling = self$resampling,
+          measure = measure,
+          terminator = trm('none'),
+          fselector = fs('rfe', n_features = self$n_features,
+            feature_fraction = self$feature_fraction),
+          store_models = store_archive # hacked :)
+        )
+
+        part = partition(task, ratio = self$subsample_ratio, stratify = TRUE)
+
+        # envelop in try/catch in case something goes wrong
+        tryCatch(
+          {
+            at$train(task, row_ids = part$train)
+
+            selected_features = at$fselect_instance$result_feature_set
+            nfeatures = length(selected_features)
+            score = at$archive$best()[[measure$id]]
+
+            res_tbl = tibble(
+              lrn_id = lrn_id,
+              iter   = iter,
+              selected_features = list(selected_features),
+              nfeatures = nfeatures,
+              score = score,
+              archive = base::switch(store_archive, list(at$archive)),
+            )
+          }, error = function(e) {
+            message('### Error: ', e$message)
+          }
+        )
+        res_tbl
+      }, future.seed = TRUE, future.conditions = 'message', future.stdout = stdout
+      ) %>% bind_rows()
+
       self$result = res
       invisible(res)
     },
