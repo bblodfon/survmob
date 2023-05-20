@@ -35,7 +35,8 @@ Imports:
     combinat,
     future,
     tictoc,
-    future.apply
+    future.apply,
+    progressr
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
