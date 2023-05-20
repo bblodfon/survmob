@@ -19,6 +19,7 @@
 #' library(mlr3pipelines)
 #' library(mlr3extralearners)
 #' library(ggplot2)
+#' library(progressr)
 #' set.seed(42)
 #'
 #' # less logging
@@ -72,6 +73,17 @@
 #'
 #' # Stability plot
 #' efs$res_plot(type = 'stab', task = task)
+#'
+#' # Execute ensemble feature selection in parallel
+#' \dontrun{
+#' options(progressr.enable = TRUE)
+#' handlers(global = TRUE)
+#' handlers('progress')
+#' plan('multisession', workers = 4)
+#'
+#' efs$run_parallel(task)
+#' efs$result
+#' }
 #'
 #' @export
 eFS = R6Class('eFS',

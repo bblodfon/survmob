@@ -23,6 +23,7 @@ library(mlr3fselect)
 library(mlr3pipelines)
 library(mlr3extralearners)
 library(ggplot2)
+library(progressr)
 set.seed(42)
 
 # less logging
@@ -77,6 +78,17 @@ efs$res_plot(type = 'nfeat', ylimits = c(3,7))
 # Stability plot
 efs$res_plot(type = 'stab', task = task)
 
+# Execute ensemble feature selection in parallel
+\dontrun{
+options(progressr.enable = TRUE)
+handlers(global = TRUE)
+handlers('progress')
+plan('multisession', workers = 4)
+
+efs$run_parallel(task)
+efs$result
+}
+
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
@@ -123,6 +135,7 @@ A \link{tibble} with the results from the eFS (see \code{run()} method)}
 \item \href{#method-eFS-supported_lrn_ids}{\code{eFS$supported_lrn_ids()}}
 \item \href{#method-eFS-rfe_info}{\code{eFS$rfe_info()}}
 \item \href{#method-eFS-run}{\code{eFS$run()}}
+\item \href{#method-eFS-run_parallel}{\code{eFS$run_parallel()}}
 \item \href{#method-eFS-fs_stats}{\code{eFS$fs_stats()}}
 \item \href{#method-eFS-stab}{\code{eFS$stab()}}
 \item \href{#method-eFS-ffs_plot}{\code{eFS$ffs_plot()}}
@@ -309,6 +322,43 @@ a tibble with columns:
 \item \code{ArchiveFSelect} => additional object for validation and checking
 (\strong{not included} by default due to large size)
 }
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-eFS-run_parallel"></a>}}
+\if{latex}{\out{\hypertarget{method-eFS-run_parallel}{}}}
+\subsection{Method \code{run_parallel()}}{
+Runs the ensemble feature selection on the given task in
+parallel
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{eFS$run_parallel(task, verbose = TRUE, store_archive = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{task}}{\link[mlr3proba:TaskSurv]{TaskSurv}}
+
+\item{\code{verbose}}{Write log messages or not? Default: TRUE.}
+
+\item{\code{store_archive}}{Whether to also store the
+\link[mlr3fselect:ArchiveFSelect]{ArchiveFSelect}
+archive object created by \code{AutoFSelector}, for debugging purposes.
+Default: FALSE.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+Same as \code{run()} but with the possibility to parallelize the RFE
+runs.
+Should be used with \code{progressr} and \code{future} libraries and it's a bit
+\emph{experimental} as this parallelization can conflict with the
+parallelization of some RSF learners.
+See examples.
+}
+
+\subsection{Returns}{
+a tibble with columns, same as in \code{run()}.
 }
 }
 \if{html}{\out{<hr>}}
