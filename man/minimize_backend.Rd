@@ -11,6 +11,6 @@ minimize_backend(task)
 }
 \description{
 Use this function when the backend of a task hasn't changed
-after a lot of preprocessing, making the it to heavy to use in further
+after a lot of preprocessing, making it too heavy to use in further
 modeling steps
 }
