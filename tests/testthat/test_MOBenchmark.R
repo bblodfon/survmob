@@ -53,4 +53,13 @@ test_that('MOBenchmark works', {
   # drop models
   mob$drop_models()
   expect_equal(dim(mob$result), c(3,3))
+
+  # reshape results
+  tbl_res = reshape_mob_res(res = mob$result, add_modality_columns = F)
+  expect_equal(colnames(tbl_res), c('task_id', 'lrn_id', 'rsmp_id', 'measure',
+    'value'))
+  expect_equal(unique(tbl_res$task_id), 'veteran')
+  expect_equal(sort(unique(tbl_res$lrn_id)), sort(lrn_ids))
+  expect_equal(length(unique(tbl_res$rsmp_id)), 50) #' `test_nrsmps = 50`
+  expect_equal(sort(unique(tbl_res$measure)), c('rcll', 'uno_c'))
 })

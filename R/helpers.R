@@ -187,3 +187,90 @@ assert_part = function(part) {
   stopifnot(names(part) == c('train', 'test'))
   stopifnot(length(intersect(part$train, part$test)) == 0)
 }
+
+#' @title Reshape MOBenchmark result object to tibble
+#'
+#' @description
+#' Reshape the output `result` object from [survmob::MOBenchmark]
+#'
+#' @param res a `tibble` with columns `task_id`, `lrn_id` and `boot_res`.
+#' Every other column is discarded.
+#' @param add_modality_columns whether to generate individual columns for each
+#' modality listed in the `task_id` column.
+#' Modality names should be separated by a dash ('-') in multi-modal `task_id`s
+#' and have different names.
+#' The modality columns will have values 0 or 1, indicating the presence or
+#' absence of a corresponding modality in the `task_id` column.
+#' Default: `TRUE`.
+#' @param endfix string to add to the end of each newly generated modality
+#' column.
+#' Default: `_omic`.
+#'
+#' @return `tibble` with columns `task_id`, `lrn_id`, `rsmp_id`, `measure`,
+#' `value` and possibly one column per omic/modality with values 1 or 0.
+#'
+#' @examples
+#' library(mlr3verse)
+#' library(mlr3proba)
+#'
+#' # Logging
+#' lgr::get_logger('bbotk')$set_threshold('warn')
+#' lgr::get_logger('mlr3')$set_threshold('warn')
+#'
+#' # task lung
+#' task = tsk('lung')
+#' pre = po('encode', method = 'treatment') %>>%
+#'       po('imputelearner', lrn('regr.rpart'))
+#' task = pre$train(task)[[1]]
+#'
+#' # partition to train and test sets
+#' part = partition(task, ratio = 0.8)
+#'
+#' mob = MOBenchmark$new(
+#'   tasks = list(task), part = part,
+#'   lrn_ids = c('coxph', 'coxnet'),
+#'   tune_nevals = 2, test_nrsmps = 20, test_workers = 1,
+#'   tune_rsmp = rsmp('holdout', ratio = 0.8),
+#'   quiet = FALSE, keep_models = TRUE
+#' )
+#'
+#' # execute benchmark
+#' mob$run()
+#'
+#' # reshape result tibble
+#' reshape_mob_res(mob$result)
+#'
+#' @export
+reshape_mob_res = function(res, add_modality_columns = TRUE, endfix = '_omic') {
+  # check number of test bootstrap resamplings
+  nrsmps_vec = mlr3misc::map_dbl(res$boot_res, `[[`, 'test_nrsmps')
+  if (length(unique(nrsmps_vec)) != 1) {
+    stop('Number of test bootstrap resamplings different?!')
+  }
+  nrsmps = res$boot_res[[1]]$test_nrsmps
+
+  df = res %>%
+    select(task_id, lrn_id, boot_res) %>%
+    mutate(scores = purrr::map(boot_res, 'scores')) %>%
+    select(!matches('boot_res')) %>%
+    tibble::add_column(id = list(tibble(rsmp_id = 1:nrsmps))) %>%
+    tidyr::unnest(cols = c(id, scores)) %>%
+    dplyr::relocate(rsmp_id, .after = lrn_id) %>%
+    tidyr::pivot_longer(cols = !matches('task_id|lrn_id|rsmp_id'),
+      names_to = 'measure', values_to = 'value')
+
+  if (add_modality_columns) {
+    # Extract modality names
+    modalities = unique(unlist(strsplit(df$task_id, '-')))
+
+    # Iterate over modalities and create new columns
+    for (modality in modalities) {
+      mod_column = paste0(modality, endfix)
+      df = df %>%
+        mutate(!!mod_column := as.integer(str_detect(task_id, modality)))
+    }
+  }
+
+  df
+}
+
