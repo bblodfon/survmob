@@ -77,6 +77,8 @@ MOBenchmark = R6Class('MOBenchmark',
     part = NULL,
     #' @field lrn_ids Internal survival learner ids to benchmark
     lrn_ids = NULL,
+    #' @field use_callr Whether to encapsulate specific learners with [callr]
+    use_callr = NULL,
     #' @field nthreads_rsf Number of cores for random survival forests
     nthreads_rsf = NULL,
     #' @field nthreads_xgb Number of cores for xgboost survival learners
@@ -120,7 +122,9 @@ MOBenchmark = R6Class('MOBenchmark',
     #' train/test splitting on the `status` indicator variable.
     #' @param lrn_ids Internal learner ids to use for benchmarking.
     #' Default is NULL, i.e. use all available learners.
-    #' See [supported_lrn_ids()][SurvLPS] for which ids can be used.
+    #' See [supported_lrn_ids][SurvLPS] for which ids can be used.
+    #' @param use_callr Whether to encapsulate specific learners with [callr].
+    #' See [SurvLPS] initialization. Default is TRUE.
     #' @param nthreads_rsf Number of cores to use in random survival forest
     #' learners (implicit parallelization).
     #' Default: use all available cores.
@@ -154,7 +158,7 @@ MOBenchmark = R6Class('MOBenchmark',
     #' @param quiet Whether to report elapsed timings for tuning and testing.
     #' Default: TRUE (**don't** report).
     initialize = function(
-      tasks, gen_task_powerset = TRUE, part, lrn_ids = NULL,
+      tasks, gen_task_powerset = TRUE, part, lrn_ids = NULL, use_callr = TRUE,
       nthreads_rsf = unname(parallelly::availableCores()), nthreads_xgb = 2,
       tune_rsmp = rsmp('repeated_cv', repeats = 5, folds = 5),
       tune_measure_id = 'uno_c', tune_nevals = 100,
@@ -174,6 +178,7 @@ MOBenchmark = R6Class('MOBenchmark',
       }
       stopifnot(nthreads_rsf > 0)
       stopifnot(nthreads_xgb > 0)
+      stopifnot(is.logical(use_callr))
 
       # check tasks
       if (length(tasks) < 1) stop('Please provide some survival tasks')
@@ -200,6 +205,7 @@ MOBenchmark = R6Class('MOBenchmark',
       self$gen_task_powerset = gen_task_powerset
       self$part = part
       self$lrn_ids = lrn_ids
+      self$use_callr = use_callr
       self$nthreads_rsf = nthreads_rsf
       self$nthreads_xgb = nthreads_xgb
       self$tune_rsmp = tune_rsmp
@@ -246,7 +252,8 @@ MOBenchmark = R6Class('MOBenchmark',
       s = SurvLPS$new(
         ids = self$lrn_ids,
         nthreads_rsf = self$nthreads_rsf,
-        nthreads_xgb = self$nthreads_xgb
+        nthreads_xgb = self$nthreads_xgb,
+        use_callr    = self$use_callr
       )
       lrn_tbl = s$lrn_tbl()
 

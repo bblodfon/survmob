@@ -49,6 +49,10 @@ SurvLPS = R6Class('SurvLPS',
     #' Number of cores to use in the xgboost survival learners
     nthreads_xgb = NULL,
 
+    #' @field use_callr (`logical(1)`)\cr
+    #' Whether to encapsulate specific learners using [callr] or not
+    use_callr = NULL,
+
     #' @description Creates a new instance of this [R6][R6::R6Class] class.
     #'
     #' @param ids (`character()`)\cr
@@ -66,17 +70,27 @@ SurvLPS = R6Class('SurvLPS',
     #' Number of cores to use in xgboost survival learners (implicit
     #' parallelization). Default value: use 1 core.
     #'
+    #' @param use_callr (`logical(1)`)\cr
+    #' Whether to encapsulate specific learners with [callr] to prevent
+    #' segmentation faults during training and prediction at the expense of
+    #' increased execution time.
+    #' Default: TRUE.
+    #' Currently only the `aorsf` learner is `callr`-encapsulated.
+    #'
     #' @details If implicit parallelization is desired, the more `nthreads_rsf`
     #' the better, but that is not the case with the xgboost learners.
     #' With xgboost, adding more cores (especially when training small datasets)
     #' might create performance issues, so test before you use too many `nthreads_xgb`!
-    initialize = function(ids          = NULL,
-                          nthreads_rsf = unname(parallelly::availableCores()),
-                          nthreads_xgb = 1) {
+    initialize = function(ids = NULL, nthreads_rsf = unname(parallelly::availableCores()),
+      nthreads_xgb = 1, use_callr = TRUE) {
       lrn_ids = self$supported_lrn_ids()
 
       if (!is.null(ids)) {
         lrn_ids = lrn_ids[lrn_ids %in% ids]
+      }
+
+      if (is.logical(use_callr)) {
+        self$use_callr = use_callr
       }
 
       private$.ids = lrn_ids
@@ -105,7 +119,7 @@ SurvLPS = R6Class('SurvLPS',
     #' @details This function uses `lrns()` and `pss()` methods to return a
     #' data table of available survival learners and tuning parameters for each.
     #'
-    #' @return a [data.table::data.table] with 3 columns:
+    #' @return a [data.table] with 3 columns:
     #' 1. `id`: learner id
     #' 2. `learner`: a [mlr3proba::LearnerSurv] object
     #' 3. `param_set`: a [paradox::ParamSet] object to be used for tuning each
@@ -220,16 +234,19 @@ SurvLPS = R6Class('SurvLPS',
               num.random.splits = 1
             )
           } else if (lrn_id == 'aorsf') {
-            lrn('surv.aorsf',
+            aorsf_lrn = lrn('surv.aorsf',
               id = 'ObliqueSurvivalForestFast',
               label = 'Accelerated Oblique Random Forest',
               fallback = lrn('surv.kaplan'),
-              encapsulate = c(train = 'callr', predict = 'callr'),
               control_type = 'fast',
               oobag_pred_type = 'surv',
               importance = 'anova', # very fast, leave it as it is for now
               attach_data = TRUE # this is needed for prediction and importance
             )
+            if (self$use_callr) {
+              aorsf_lrn$encapsulate = c(train = 'callr', predict = 'callr')
+            }
+            aorsf_lrn
           } else if (lrn_id == 'coxboost') { # CoxBoost
             lrn('surv.coxboost', id = 'CoxBoost',
               fallback = lrn('surv.kaplan'),

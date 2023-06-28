@@ -128,6 +128,10 @@ eFS = R6Class('eFS',
     #' Number of trees to use in the random forest survival learners
     num_trees = NULL,
 
+    #' @field use_callr (`logical(1)`)\cr
+    #' Whether to encapsulate specific learners using [callr] or not
+    use_callr = NULL,
+
     #' @field result (`tibble`)\cr
     #' A [tibble] with the results from the eFS (see `run()` method)
     result = NULL,
@@ -180,6 +184,9 @@ eFS = R6Class('eFS',
     #' @param num_trees Number of trees to use in the random forest survival
     #' learners. Defaults to 250.
     #'
+    #' @param use_callr Whether to encapsulate specific RSFs with [callr].
+    #' See [SurvLPS] initialization. Default is TRUE.
+    #'
     #' @details
     #' - By default, `msr_id` is `oob_error`:
     #'    - Each RSF provides (1 - Harrell's C-index) as Out-Of-Bag error
@@ -200,7 +207,8 @@ eFS = R6Class('eFS',
       resampling = mlr3::rsmp('insample'),
       repeats = 100, subsample_ratio = 0.9,
       n_features = 2, feature_fraction = 0.8,
-      nthreads_rsf = unname(parallelly::availableCores()), num_trees = 250
+      nthreads_rsf = unname(parallelly::availableCores()),
+      num_trees = 250, use_callr = TRUE
     ) {
       # learner ids
       supp_lrn_ids = self$supported_lrn_ids()
@@ -256,6 +264,11 @@ eFS = R6Class('eFS',
         self$num_trees = num_trees
       else
         stop('\'num_trees\' needs to be larger than 0')
+
+      if (is.logical(use_callr))
+        self$use_callr = use_callr
+      else
+        stop('\'use_callr\' needs to be either TRUE or FALSE')
     },
 
     #' @description Returns a vector of internal ids corresponding to the
@@ -751,7 +764,8 @@ eFS = R6Class('eFS',
     .get_lrns = function() {
       rsf_lrns =
         SurvLPS$
-        new(ids = self$lrn_ids, nthreads_rsf = self$nthreads_rsf)$
+        new(ids = self$lrn_ids, nthreads_rsf = self$nthreads_rsf,
+          use_callr = self$use_callr)$
         lrns()
 
       # Apply the following parameter list to each RSF learner (ranger)
