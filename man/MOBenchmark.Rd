@@ -50,7 +50,7 @@ part = partition(task, ratio = 0.8)
 
 mob = MOBenchmark$new(
   tasks = list(task), part = part,
-  lrn_ids = c('coxph', 'coxnet', 'aorsf'),
+  lrn_ids = c('coxph', 'coxnet', 'aorsf'), use_callr = FALSE,
   tune_nevals = 2, test_nrsmps = 50, test_workers = 5,
   tune_rsmp = rsmp('holdout', ratio = 0.8),
   quiet = FALSE, keep_models = TRUE
