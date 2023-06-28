@@ -27,37 +27,5 @@ Default: \verb{_omic}.}
 \code{value} and possibly one column per omic/modality with values 1 or 0.
 }
 \description{
-Reshape the output \code{result} object from \link{MOBenchmark}
-}
-\examples{
-library(mlr3verse)
-library(mlr3proba)
-
-# Logging
-lgr::get_logger('bbotk')$set_threshold('warn')
-lgr::get_logger('mlr3')$set_threshold('warn')
-
-# task lung
-task = tsk('lung')
-pre = po('encode', method = 'treatment') \%>>\%
-      po('imputelearner', lrn('regr.rpart'))
-task = pre$train(task)[[1]]
-
-# partition to train and test sets
-part = partition(task, ratio = 0.8)
-
-mob = MOBenchmark$new(
-  tasks = list(task), part = part,
-  lrn_ids = c('coxph', 'coxnet'),
-  tune_nevals = 2, test_nrsmps = 20, test_workers = 1,
-  tune_rsmp = rsmp('holdout', ratio = 0.8),
-  quiet = FALSE, keep_models = TRUE
-)
-
-# execute benchmark
-mob$run()
-
-# reshape result tibble
-reshape_mob_res(mob$result)
-
+Reshape the output \code{result} object from \link{MOBenchmark} (see example there).
 }
