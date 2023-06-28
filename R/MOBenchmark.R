@@ -63,7 +63,7 @@
 #' mob$result
 #'
 #' # reshape benchmarking results
-#' df = reshape_mob_res(mob$result)
+#' df = mob$reshape_result()
 #' df
 #'
 #' # Run Bayesian LME model
@@ -404,6 +404,61 @@ MOBenchmark = R6Class('MOBenchmark',
     #' @description remove models from result tibble to reduce size
     drop_models = function() {
       self$result$model = NULL
+    },
+
+    #' @description
+    #' Reshape the output `$result` data from [MOBenchmark] to a longer format.
+    #' See example.
+    #'
+    #' @param add_modality_columns whether to generate individual columns for each
+    #' modality listed in the `task_id` column.
+    #' Modality names should be separated by a dash ('-') in multi-modal `task_id`s
+    #' and have different names.
+    #' The modality columns will have values 0 or 1, indicating the presence or
+    #' absence of a corresponding modality in the `task_id` column.
+    #' Default: `TRUE`.
+    #' @param endfix string to add to the end of each newly generated modality
+    #' column.
+    #' Default: `_omic`.
+    #'
+    #' @return `tibble` with columns `task_id`, `lrn_id`, `rsmp_id`, `measure`,
+    #' `value` and possibly one column per omic/modality with values 1 or 0.
+    reshape_result = function(add_modality_columns = TRUE, endfix = '_omic') {
+      if (is.null(self$result)) stop('Execute `run()` first!')
+
+      # Benchmarking result tibble
+      res = self$result
+
+      # check number of test bootstrap resamplings
+      nrsmps_vec = mlr3misc::map_dbl(res$boot_res, `[[`, 'test_nrsmps')
+      if (length(unique(nrsmps_vec)) != 1) {
+        stop('Number of test bootstrap resamplings different?!')
+      }
+      nrsmps = res$boot_res[[1]]$test_nrsmps
+
+      df = res %>%
+        select(task_id, lrn_id, boot_res) %>%
+        mutate(scores = purrr::map(boot_res, 'scores')) %>%
+        select(!matches('boot_res')) %>%
+        tibble::add_column(id = list(tibble(rsmp_id = 1:nrsmps))) %>%
+        tidyr::unnest(cols = c(id, scores)) %>%
+        dplyr::relocate(rsmp_id, .after = lrn_id) %>%
+        tidyr::pivot_longer(cols = !matches('task_id|lrn_id|rsmp_id'),
+          names_to = 'measure', values_to = 'value')
+
+      if (add_modality_columns) {
+        # Extract modality names
+        modalities = unique(unlist(strsplit(df$task_id, '-')))
+
+        # Iterate over modalities and create new columns
+        for (modality in modalities) {
+          mod_column = paste0(modality, endfix)
+          df = df %>%
+            mutate(!!mod_column := as.integer(str_detect(task_id, modality)))
+        }
+      }
+
+      df
     }
   )
 )

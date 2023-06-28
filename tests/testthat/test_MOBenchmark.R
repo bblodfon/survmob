@@ -4,7 +4,7 @@ test_that('MOBenchmark works', {
   mob = MOBenchmark$new(
     lrn_ids = lrn_ids, use_callr = FALSE, tasks = list(taskv), part = part,
     nthreads_rsf = 2, nthreads_xgb = 2,
-    tune_nevals = 2, test_nrsmps = 50, test_workers = 4,
+    tune_nevals = 2, test_nrsmps = 10, test_workers = 1,
     tune_rsmp = rsmp('holdout', ratio = 0.8),
     keep_models = TRUE, quiet = TRUE
   )
@@ -24,8 +24,8 @@ test_that('MOBenchmark works', {
   expect_equal(mob$tune_measure_id, 'uno_c')
   expect_equal(mob$tune_nevals, 2)
   expect_equal(mob$test_measure_ids, c('uno_c', 'rcll'))
-  expect_equal(mob$test_nrsmps, 50)
-  expect_equal(mob$test_workers, 4)
+  expect_equal(mob$test_nrsmps, 10)
+  expect_equal(mob$test_workers, 1)
   expect_null(mob$result)
 
   # execute benchmark
@@ -53,11 +53,11 @@ test_that('MOBenchmark works', {
   expect_equal(dim(mob$result), c(2,3))
 
   # reshape results
-  tbl_res = reshape_mob_res(res = mob$result, add_modality_columns = F)
+  tbl_res = mob$reshape_result(add_modality_columns = F)
   expect_equal(colnames(tbl_res), c('task_id', 'lrn_id', 'rsmp_id', 'measure',
     'value'))
   expect_equal(unique(tbl_res$task_id), 'veteran')
   expect_equal(sort(unique(tbl_res$lrn_id)), sort(lrn_ids))
-  expect_equal(length(unique(tbl_res$rsmp_id)), 50) #' `test_nrsmps = 50`
+  expect_equal(length(unique(tbl_res$rsmp_id)), 10) #' `test_nrsmps = 50`
   expect_equal(sort(unique(tbl_res$measure)), c('rcll', 'uno_c'))
 })

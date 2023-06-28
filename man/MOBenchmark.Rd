@@ -67,7 +67,7 @@ mob$run()
 mob$result
 
 # reshape benchmarking results
-df = reshape_mob_res(mob$result)
+df = mob$reshape_result()
 df
 
 # Run Bayesian LME model
@@ -122,6 +122,7 @@ informative messages?}
 \item \href{#method-MOBenchmark-tune_learner}{\code{MOBenchmark$tune_learner()}}
 \item \href{#method-MOBenchmark-drop_tasks}{\code{MOBenchmark$drop_tasks()}}
 \item \href{#method-MOBenchmark-drop_models}{\code{MOBenchmark$drop_models()}}
+\item \href{#method-MOBenchmark-reshape_result}{\code{MOBenchmark$reshape_result()}}
 \item \href{#method-MOBenchmark-clone}{\code{MOBenchmark$clone()}}
 }
 }
@@ -311,6 +312,38 @@ remove models from result tibble to reduce size
 \if{html}{\out{<div class="r">}}\preformatted{MOBenchmark$drop_models()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MOBenchmark-reshape_result"></a>}}
+\if{latex}{\out{\hypertarget{method-MOBenchmark-reshape_result}{}}}
+\subsection{Method \code{reshape_result()}}{
+Reshape the output \verb{$result} data from \link{MOBenchmark} to a longer format.
+See example.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MOBenchmark$reshape_result(add_modality_columns = TRUE, endfix = "_omic")}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{add_modality_columns}}{whether to generate individual columns for each
+modality listed in the \code{task_id} column.
+Modality names should be separated by a dash ('-') in multi-modal \code{task_id}s
+and have different names.
+The modality columns will have values 0 or 1, indicating the presence or
+absence of a corresponding modality in the \code{task_id} column.
+Default: \code{TRUE}.}
+
+\item{\code{endfix}}{string to add to the end of each newly generated modality
+column.
+Default: \verb{_omic}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+\code{tibble} with columns \code{task_id}, \code{lrn_id}, \code{rsmp_id}, \code{measure},
+\code{value} and possibly one column per omic/modality with values 1 or 0.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MOBenchmark-clone"></a>}}
