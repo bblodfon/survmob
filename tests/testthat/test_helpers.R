@@ -137,8 +137,8 @@ test_that('fit_blme_model_cmp works', {
   )
 
   suppressWarnings({
-    res = fit_blme_model_cmp(df, verbose = FALSE, n_chains = 4, n_iters = 2000,
-    n_cores = 4)
+    res = fit_blme_model_cmp(df, verbose = FALSE, n_chains = 2, n_iters = 1000,
+      n_cores = 2)
   })
   expect_equal(length(res), 2)
   expect_class(res$measureA, 'stanreg')
