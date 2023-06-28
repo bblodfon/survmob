@@ -123,6 +123,9 @@ Number of cores to use in the random forest survival learners}
 \item{\code{num_trees}}{(\code{int(1)})\cr
 Number of trees to use in the random forest survival learners}
 
+\item{\code{use_callr}}{(\code{logical(1)})\cr
+Whether to encapsulate specific learners using \link{callr} or not}
+
 \item{\code{result}}{(\code{tibble})\cr
 A \link{tibble} with the results from the eFS (see \code{run()} method)}
 }
@@ -159,7 +162,8 @@ Creates a new instance of this \link[R6:R6Class]{R6} class.
   n_features = 2,
   feature_fraction = 0.8,
   nthreads_rsf = unname(parallelly::availableCores()),
-  num_trees = 250
+  num_trees = 250,
+  use_callr = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -211,6 +215,9 @@ the implicit parallelization of the RSF learners.}
 
 \item{\code{num_trees}}{Number of trees to use in the random forest survival
 learners. Defaults to 250.}
+
+\item{\code{use_callr}}{Whether to encapsulate specific RSFs with \link{callr}.
+See \link{SurvLPS} initialization. Default is TRUE.}
 }
 \if{html}{\out{</div>}}
 }

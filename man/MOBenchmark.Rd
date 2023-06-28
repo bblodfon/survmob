@@ -82,6 +82,8 @@ res = fit_blme_model_cmp(df)
 
 \item{\code{lrn_ids}}{Internal survival learner ids to benchmark}
 
+\item{\code{use_callr}}{Whether to encapsulate specific learners with \link{callr}}
+
 \item{\code{nthreads_rsf}}{Number of cores for random survival forests}
 
 \item{\code{nthreads_xgb}}{Number of cores for xgboost survival learners}
@@ -101,7 +103,8 @@ tuning}
 
 \item{\code{keep_models}}{Keep the trained/tuned models?}
 
-\item{\code{quiet}}{Show elapsed times for training and testing?}
+\item{\code{quiet}}{Show elapsed times for training/testing and other
+informative messages?}
 
 \item{\code{result}}{Tibble result with the benchmark results}
 }
@@ -129,6 +132,7 @@ Creates a new instance of this \link[R6:R6Class]{R6} class.
   gen_task_powerset = TRUE,
   part,
   lrn_ids = NULL,
+  use_callr = TRUE,
   nthreads_rsf = unname(parallelly::availableCores()),
   nthreads_xgb = 2,
   tune_rsmp = rsmp("repeated_cv", repeats = 5, folds = 5),
@@ -138,7 +142,7 @@ Creates a new instance of this \link[R6:R6Class]{R6} class.
   test_nrsmps = 1000,
   test_workers = 1,
   keep_models = FALSE,
-  quiet = TRUE
+  quiet = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -165,7 +169,10 @@ train/test splitting on the \code{status} indicator variable.}
 
 \item{\code{lrn_ids}}{Internal learner ids to use for benchmarking.
 Default is NULL, i.e. use all available learners.
-See \link[=SurvLPS]{supported_lrn_ids()} for which ids can be used.}
+See \link[=SurvLPS]{supported_lrn_ids} for which ids can be used.}
+
+\item{\code{use_callr}}{Whether to encapsulate specific learners with \link{callr}.
+See \link{SurvLPS} initialization. Default is TRUE.}
 
 \item{\code{nthreads_rsf}}{Number of cores to use in random survival forest
 learners (implicit parallelization).
@@ -206,8 +213,9 @@ and set to 1 to avoid strange overuse of CPU.}
 \item{\code{keep_models}}{Whether to keep the trained models after tuning.
 Default: FALSE.}
 
-\item{\code{quiet}}{Whether to report elapsed timings for tuning and testing.
-Default: TRUE (\strong{don't} report).}
+\item{\code{quiet}}{Whether to report elapsed timings for tuning/testing and
+other informative messages.
+Default: FALSE (\strong{Report timings and show messages}).}
 }
 \if{html}{\out{</div>}}
 }

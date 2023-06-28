@@ -51,6 +51,9 @@ Number of cores to use in the random forest survival learners}
 
 \item{\code{nthreads_xgb}}{(\code{int(1)})\cr
 Number of cores to use in the xgboost survival learners}
+
+\item{\code{use_callr}}{(\code{logical(1)})\cr
+Whether to encapsulate specific learners using \link{callr} or not}
 }
 \if{html}{\out{</div>}}
 }
@@ -76,7 +79,8 @@ Creates a new instance of this \link[R6:R6Class]{R6} class.
 \if{html}{\out{<div class="r">}}\preformatted{SurvLPS$new(
   ids = NULL,
   nthreads_rsf = unname(parallelly::availableCores()),
-  nthreads_xgb = 1
+  nthreads_xgb = 1,
+  use_callr = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -98,6 +102,13 @@ parallelization). Default value: use all available cores.}
 \item{\code{nthreads_xgb}}{(\code{int(1)})\cr
 Number of cores to use in xgboost survival learners (implicit
 parallelization). Default value: use 1 core.}
+
+\item{\code{use_callr}}{(\code{logical(1)})\cr
+Whether to encapsulate specific learners with \link{callr} to prevent
+segmentation faults during training and prediction at the expense of
+increased execution time.
+Default: TRUE.
+Currently only the \code{aorsf} learner is \code{callr}-encapsulated.}
 }
 \if{html}{\out{</div>}}
 }
@@ -154,7 +165,7 @@ data table of available survival learners and tuning parameters for each.
 }
 
 \subsection{Returns}{
-a \link[data.table:data.table]{data.table::data.table} with 3 columns:
+a \link{data.table} with 3 columns:
 \enumerate{
 \item \code{id}: learner id
 \item \code{learner}: a \link[mlr3proba:LearnerSurv]{mlr3proba::LearnerSurv} object
