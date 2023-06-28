@@ -18,11 +18,11 @@ Imports:
     mlr3misc (>= 0.11.0),
     mlr3fselect (>= 0.10.0),
     mlr3mbo (>= 0.2.0),
-    paradox,
+    paradox (>= 0.11.1),
     R6,
     parallelly,
     data.table,
-    tibble,
+    tibble (>= 3.2.1),
     dplyr (> 1.1.0),
     checkmate,
     lgr,
@@ -31,7 +31,7 @@ Imports:
     ggplot2,
     scales,
     stabm,
-    tidyr,
+    tidyr (>= 1.3.0),
     combinat,
     future,
     tictoc,
@@ -39,7 +39,8 @@ Imports:
     progressr,
     stringr,
     purrr,
-    tidyselect
+    tidyselect (>= 1.2.0),
+    rstanarm (>= 2.21.4)
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

@@ -55,6 +55,7 @@
 #' @importFrom progressr progressor
 #' @importFrom purrr map
 #' @importFrom R6 R6Class
+#' @importFrom rstanarm stan_glmer
 #' @importFrom scales label_percent
 #' @importFrom stabm stabilityJaccard
 #' @importFrom stabm stabilityNogueira
@@ -67,6 +68,7 @@
 #' @importFrom tictoc toc
 #' @importFrom tidyr pivot_longer
 #' @importFrom tidyr unnest
+#' @importFrom tidyselect all_of
 #' @importFrom tidyselect matches
 ## usethis namespace: end
 NULL
