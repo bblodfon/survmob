@@ -24,10 +24,16 @@
 #' @examples
 #' library(mlr3verse)
 #' library(mlr3proba)
+#' library(progressr)
 #'
 #' # Logging
 #' lgr::get_logger('bbotk')$set_threshold('warn')
 #' lgr::get_logger('mlr3')$set_threshold('warn')
+#'
+#' # Progress
+#' options(progressr.enable = TRUE)
+#' handlers(global = TRUE)
+#' handlers('progress')
 #'
 #' # task lung
 #' task = tsk('lung')
@@ -51,6 +57,14 @@
 #'
 #' # result tibble
 #' mob$result
+#'
+#' # reshape benchmarking results
+#' df = reshape_mob_res(mob$result)
+#' df
+#'
+#' # Run Bayesian LME model
+#' plan(multisession, workers = 2)
+#' res = fit_blme_model_cmp(df)
 #'
 #' @export
 MOBenchmark = R6Class('MOBenchmark',
