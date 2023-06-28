@@ -126,3 +126,21 @@ test_that('assert_part works', {
   expect_error(assert_part(list(train = 1)))
   expect_error(assert_part(list(train = 1, test = 1)))
 })
+
+test_that('fit_blme_model_cmp works', {
+  df = tibble(
+    task_id = rep(c(rep('taskA', 20), rep('taskB', 20)), 2),
+    lrn_id = rep(c(rep('lrnA', 10), rep('lrnB', 20), rep('lrnA', 10)), 2),
+    rsmp_id = rep(1:10, 8),
+    measure = c(rep('measureA', 40), rep('measureB', 40)),
+    value = c(rnorm(40), rnorm(40, 1))
+  )
+
+  suppressWarnings({
+    res = fit_blme_model_cmp(df, verbose = FALSE, n_chains = 4, n_iters = 2000,
+    n_cores = 4)
+  })
+  expect_equal(length(res), 2)
+  expect_class(res$measureA, 'stanreg')
+  expect_class(res$measureB, 'stanreg')
+})
