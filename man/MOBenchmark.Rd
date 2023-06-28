@@ -62,7 +62,7 @@ mob$run()
 # result tibble
 mob$result
 
-# reshape result tibble
+# reshape benchmarking results
 df = reshape_mob_res(mob$result)
 df
 
