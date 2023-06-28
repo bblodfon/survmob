@@ -191,7 +191,7 @@ assert_part = function(part) {
 #' @title Reshape MOBenchmark result object to tibble
 #'
 #' @description
-#' Reshape the output `result` object from [survmob::MOBenchmark]
+#' Reshape the output `result` object from [MOBenchmark] (see example there).
 #'
 #' @param res a `tibble` with columns `task_id`, `lrn_id` and `boot_res`.
 #' Every other column is discarded.
@@ -208,37 +208,6 @@ assert_part = function(part) {
 #'
 #' @return `tibble` with columns `task_id`, `lrn_id`, `rsmp_id`, `measure`,
 #' `value` and possibly one column per omic/modality with values 1 or 0.
-#'
-#' @examples
-#' library(mlr3verse)
-#' library(mlr3proba)
-#'
-#' # Logging
-#' lgr::get_logger('bbotk')$set_threshold('warn')
-#' lgr::get_logger('mlr3')$set_threshold('warn')
-#'
-#' # task lung
-#' task = tsk('lung')
-#' pre = po('encode', method = 'treatment') %>>%
-#'       po('imputelearner', lrn('regr.rpart'))
-#' task = pre$train(task)[[1]]
-#'
-#' # partition to train and test sets
-#' part = partition(task, ratio = 0.8)
-#'
-#' mob = MOBenchmark$new(
-#'   tasks = list(task), part = part,
-#'   lrn_ids = c('coxph', 'coxnet'),
-#'   tune_nevals = 2, test_nrsmps = 20, test_workers = 1,
-#'   tune_rsmp = rsmp('holdout', ratio = 0.8),
-#'   quiet = FALSE, keep_models = TRUE
-#' )
-#'
-#' # execute benchmark
-#' mob$run()
-#'
-#' # reshape result tibble
-#' reshape_mob_res(mob$result)
 #'
 #' @export
 reshape_mob_res = function(res, add_modality_columns = TRUE, endfix = '_omic') {
@@ -274,3 +243,94 @@ reshape_mob_res = function(res, add_modality_columns = TRUE, endfix = '_omic') {
   df
 }
 
+#' @title Fit Bayesian LME models to compare multiple models
+#'
+#' @description
+#' Using a general format of benchmarking data, this function fits the following
+#' Bayesian linear-mixed effects (LME) model using [stan_glmer][rstanarm::stan_glmer]:
+#'
+#' \deqn{value \sim -1 + lrn\_id + (1 | task\_id/rsmp\_id)}
+#'
+#' where:
+#' - `lrn_id` is the model used
+#' - `task_id` is the dataset the model was used on
+#' - `rsmp_id` is the specific resampling of the dataset
+#' - `value` is the output value for a particular performance `measure`
+#'
+#' One LME model is fit per `measure`, possibly in parallel using
+#' [future_lapply][future.apply::future_lapply].
+#' The aim is to get one posterior distribution per `model`, for each
+#' performance `measure` in the benchmarking data, while accounting for
+#' possible inter-dependencies between the different datasets as well as
+#' the nested within-resample correlation that might exist.
+#'
+#' See example in [MOBenchmark].
+#'
+#' @param df a `data.frame`/`tibble` object with the benchmarking results.
+#' Columns names must include: `task_id`, `lrn_id`, `rsmp_id`, `measure` and
+#' `value`.
+#' For example, see the output of [reshape_mob_res].
+#' @param nrsmps_perc Percentage of resampling ids to keep for faster
+#' bayesian model fit (number between 0 and 1).
+#' Default is 1, so we keep all of the resampling ids.
+#' @param n_chains Number of Markon chains for MCMC. Default = 4
+#' @param n_iters Number of iterations per chain. Default = 5000
+#' @param n_cores Number of cores for MCMC parallelization. Default = 4
+#' @param seed seed number for MCMC
+#' @param verbose whether to print some informative messages. Default = TRUE.
+#' @param ... other arguments passed on to [rstanarm::stan_glmer]
+#'
+#' @return A list of [stanreg-objects][rstanarm::stanreg-objects], one per
+#' performance `measure` in the benchmarking data.
+#'
+#' @export
+fit_blme_model_cmp = function(df, nrsmps_perc = 1, n_chains = 4,
+  n_iters = 5000, n_cores = 4, seed = 42, verbose = TRUE, ...) {
+  # input checks
+  col_names = c('lrn_id', 'task_id', 'rsmp_id', 'measure', 'value')
+  stopifnot(col_names %in% colnames(df))
+  stopifnot(nrsmps_perc > 0, nrsmps_perc <= 1)
+
+  if (verbose) message('\n### Fit Bayesian LMEs to compare learners')
+
+  # reducing rsmp_ids for faster model fit
+  if (nrsmps_perc < 1) {
+    rsmp_ids = unique(df$rsmp_id)
+    nrsmps = length(rsmp_ids)
+
+    set.seed(seed) #' for `sample()`
+    df = df %>%
+      filter(rsmp_id %in% sample(x = rsmp_ids, size = ceiling(nrsmps * nrsmps_perc)))
+
+    if (verbose) message('Reducing to ', ceiling(nrsmps * nrsmps_perc), ' rsmp_ids')
+  }
+
+  # Measures - one model per measure
+  msr_ids = unique(df$measure)
+  if (verbose) message('Measures: ', paste0(msr_ids, collapse = ', '))
+
+  # progress bar - parallelize across measures
+  pb = progressr::progressor(steps = length(msr_ids))
+
+  model_list = future.apply::future_lapply(1:length(msr_ids), function(i) {
+    set.seed(i)
+
+    msr_id = msr_ids[i]
+    pb(sprintf('%s', msr_id))
+
+    df_sub = df %>%
+      filter(measure == msr_id) %>%
+      select(all_of(col_names))
+
+    model = rstanarm::stan_glmer(
+      data = df_sub,
+      # MAIN FORMULA FOR MODEL COMPARISON
+      formula = value ~ -1 + lrn_id + (1 | task_id/rsmp_id),
+      chains = n_chains, cores = n_cores, iter = n_iters, seed = seed, ...
+    )
+  }, future.seed = TRUE)
+
+  names(model_list) = msr_ids
+
+  model_list
+}
