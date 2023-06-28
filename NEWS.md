@@ -1,7 +1,10 @@
 # survmob 0.1.2
 
 * add a `NEWS.md` file to track changes to the package
-* add `fit_blme_model_cmp()` to fit Bayesian LME models to benchmarking results
+* add `reshape_results()` to `MOBenchmark` class
+* add `fit_blme_model_cmp()` to fit Bayesian LME models using benchmarking results
+* extend `quiet` parameter scope in `MOBenchmark` to silence messages
+* add `use_callr` parameter in `SurvLPS` to control encapsulation of `aorsf` learner
 
 # survmob 0.1.1
 
