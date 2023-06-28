@@ -51,12 +51,20 @@ test_that('SurvLPS works as expected', {
   expect_equal(rsf_lrn$param_set$values$splitrule, 'extratrees')
   expect_equal(rsf_lrn$param_set$values$num.random.splits, 1)
 
-  rsf_lrn = dt[id == 'aorsf']$learner[[1]]
-  expect_class(rsf_lrn, c('LearnerSurv', 'LearnerSurvAorsf'))
-  expect_equal(rsf_lrn$param_set$values$control_type, 'fast')
-  expect_equal(rsf_lrn$param_set$values$oobag_pred_type, 'surv')
-  expect_equal(rsf_lrn$param_set$values$importance, 'anova')
-  expect_true(rsf_lrn$param_set$values$attach_data)
+  aorsf_lrn = dt[id == 'aorsf']$learner[[1]]
+  expect_class(aorsf_lrn, c('LearnerSurv', 'LearnerSurvAorsf'))
+  expect_equal(aorsf_lrn$param_set$values$control_type, 'fast')
+  expect_equal(aorsf_lrn$param_set$values$oobag_pred_type, 'surv')
+  expect_equal(aorsf_lrn$param_set$values$importance, 'anova')
+  expect_true(aorsf_lrn$param_set$values$attach_data)
+  expect_equal(unname(aorsf_lrn$encapsulate), c('callr', 'callr'))
+
+  # check encapsulation
+  s = SurvLPS$new(ids = c('coxph', 'aorsf'), use_callr = FALSE)
+  coxph_lrn = s$lrns()[[1L]]
+  aorsf_lrn = s$lrns()[[2L]]
+  expect_equal(unname(coxph_lrn$encapsulate), c('evaluate', 'evaluate'))
+  expect_equal(unname(aorsf_lrn$encapsulate), c('evaluate', 'evaluate'))
 })
 
 test_that('Tune CoxNet using Uno\'s C-index', {

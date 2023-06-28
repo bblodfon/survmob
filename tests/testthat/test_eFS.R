@@ -15,6 +15,7 @@ test_that('eFS is initialized properly', {
   # RSF parameters
   expect_equal(efs$nthreads_rsf, 7)
   expect_equal(efs$num_trees, 250)
+  expect_true(efs$use_callr)
 
   # errors
   expect_error(efs$new(msr_id = 'NotProperMeasure'))
@@ -143,7 +144,9 @@ test_that('run() works', {
   expect_equal(result2, efs2$result)
 
   # eFS with aorsf
-  efs3 = eFS$new(lrn_ids = 'aorsf', repeats = 1, n_features = 5)
+  efs3 = eFS$new(lrn_ids = 'aorsf', repeats = 1, n_features = 5,
+    use_callr = FALSE) # for speed-up
+  expect_false(efs3$use_callr)
 
   result3 = efs3$run(task = taskv, verbose = FALSE)
   expect_equal(result3, efs3$result)

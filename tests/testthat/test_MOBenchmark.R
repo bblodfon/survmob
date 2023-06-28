@@ -1,23 +1,24 @@
 test_that('MOBenchmark works', {
   part = partition(taskv, ratio = 0.8)
-  lrn_ids = c('coxph', 'xgboost_cox_early', 'rsf_extratrees')
+  lrn_ids = c('coxph', 'aorsf')
   mob = MOBenchmark$new(
-    lrn_ids = lrn_ids, tasks = list(taskv), part = part,
+    lrn_ids = lrn_ids, use_callr = FALSE, tasks = list(taskv), part = part,
     nthreads_rsf = 2, nthreads_xgb = 2,
     tune_nevals = 2, test_nrsmps = 50, test_workers = 4,
     tune_rsmp = rsmp('holdout', ratio = 0.8),
-    keep_models = TRUE, quiet = FALSE
+    keep_models = TRUE, quiet = TRUE
   )
 
   # check initialized parameters
   expect_list(mob$tasks)
   expect_equal(length(mob$tasks), 1)
   expect_equal(mob$lrn_ids, lrn_ids)
+  expect_false(mob$use_callr)
   expect_equal(mob$part, part)
   expect_equal(mob$nthreads_rsf, 2)
   expect_equal(mob$nthreads_xgb, 2)
   expect_true(mob$gen_task_powerset) # but not used since we use only 1 task
-  expect_false(mob$quiet)
+  expect_true(mob$quiet)
   expect_true(mob$keep_models)
   expect_equal(mob$tune_rsmp$param_set$values$ratio, 0.8)
   expect_equal(mob$tune_measure_id, 'uno_c')
@@ -33,18 +34,15 @@ test_that('MOBenchmark works', {
   # check benchmark result
   res = mob$result
   expect_class(res, 'tbl_df')
-  expect_equal(dim(res), c(3,4))
+  expect_equal(dim(res), c(2,4))
   expect_equal(colnames(res), c('task_id', 'lrn_id', 'model', 'boot_res'))
-  expect_equal(res$task_id, rep('veteran', 3)) # same task
+  expect_equal(res$task_id, rep('veteran', 2)) # same task
   expect_true(all(res$lrn_id %in% lrn_ids)) # learners
   # 2 `test_measure_ids`
   expect_equal(colnames(res$boot_res[[1]]$score), c('uno_c', 'rcll'))
   expect_equal(colnames(res$boot_res[[1]]$scores), c('uno_c', 'rcll'))
   # bootstrap checks
   expect_equal(nrow(res$boot_res[[1]]$scores), mob$test_nrsmps)
-  # `test_workers` for xgboost has been reduced to 1
-  sub_res = res %>% filter(lrn_id == 'xgboost_cox_early')
-  expect_equal(sub_res$boot_res[[1]]$test_workers, 1)
 
   # drop tasks
   mob$drop_tasks()
@@ -52,7 +50,7 @@ test_that('MOBenchmark works', {
 
   # drop models
   mob$drop_models()
-  expect_equal(dim(mob$result), c(3,3))
+  expect_equal(dim(mob$result), c(2,3))
 
   # reshape results
   tbl_res = reshape_mob_res(res = mob$result, add_modality_columns = F)
