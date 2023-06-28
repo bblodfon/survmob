@@ -23,31 +23,35 @@
 #'
 #' @examples
 #' library(mlr3verse)
+#' library(mlr3mbo)
 #' library(mlr3proba)
-#' library(progressr)
+#' library(future)
 #'
 #' # Logging
 #' lgr::get_logger('bbotk')$set_threshold('warn')
 #' lgr::get_logger('mlr3')$set_threshold('warn')
-#'
-#' # Progress
-#' options(progressr.enable = TRUE)
-#' handlers(global = TRUE)
-#' handlers('progress')
 #'
 #' # task lung
 #' task = tsk('lung')
 #' pre = po('encode', method = 'treatment') %>>%
 #'       po('imputelearner', lrn('regr.rpart'))
 #' task = pre$train(task)[[1]]
+#' task$filter(1:100) # subsample for faster execution
+#'
+#' # task veteran
+#' task2 = as_task_surv(x = survival::veteran, id = 'veteran',
+#'   time = 'time', event = 'status')
+#' task2 = pre$train(task2)[[1L]]
+#' task2$filter(1:100) # subsample for faster execution
 #'
 #' # partition to train and test sets
 #' part = partition(task, ratio = 0.8)
 #'
 #' mob = MOBenchmark$new(
-#'   tasks = list(task), part = part,
+#'   tasks = list(task, task2), part = part,
+#'   gen_task_powerset = FALSE,
 #'   lrn_ids = c('coxph', 'coxnet', 'aorsf'), use_callr = FALSE,
-#'   tune_nevals = 2, test_nrsmps = 50, test_workers = 5,
+#'   tune_nevals = 2, test_nrsmps = 10, test_workers = 1,
 #'   tune_rsmp = rsmp('holdout', ratio = 0.8),
 #'   quiet = FALSE, keep_models = TRUE
 #' )
@@ -63,8 +67,8 @@
 #' df
 #'
 #' # Run Bayesian LME model
-#' plan(multisession, workers = 2)
-#' res = fit_blme_model_cmp(df)
+#' plan(multisession, workers = 2) # 2 measures tested by default
+#' res = fit_blme_model_cmp(df, n_chains = 2, n_iters = 2000)
 #'
 #' @export
 MOBenchmark = R6Class('MOBenchmark',
