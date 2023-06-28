@@ -98,7 +98,8 @@ MOBenchmark = R6Class('MOBenchmark',
     test_workers = NULL,
     #' @field keep_models Keep the trained/tuned models?
     keep_models = NULL,
-    #' @field quiet Show elapsed times for training and testing?
+    #' @field quiet Show elapsed times for training/testing and other
+    #' informative messages?
     quiet = NULL,
     #' @field result Tibble result with the benchmark results
     result = NULL,
@@ -155,8 +156,9 @@ MOBenchmark = R6Class('MOBenchmark',
     #' and set to 1 to avoid strange overuse of CPU.
     #' @param keep_models Whether to keep the trained models after tuning.
     #' Default: FALSE.
-    #' @param quiet Whether to report elapsed timings for tuning and testing.
-    #' Default: TRUE (**don't** report).
+    #' @param quiet Whether to report elapsed timings for tuning/testing and
+    #' other informative messages.
+    #' Default: FALSE (**Report timings and show messages**).
     initialize = function(
       tasks, gen_task_powerset = TRUE, part, lrn_ids = NULL, use_callr = TRUE,
       nthreads_rsf = unname(parallelly::availableCores()), nthreads_xgb = 2,
@@ -164,7 +166,7 @@ MOBenchmark = R6Class('MOBenchmark',
       tune_measure_id = 'uno_c', tune_nevals = 100,
       test_measure_ids = c('uno_c', 'rcll'),
       test_nrsmps = 1000, test_workers = 1,
-      keep_models = FALSE, quiet = TRUE
+      keep_models = FALSE, quiet = FALSE
     ) {
       # some simple sanity checks
       if (test_nrsmps <= 1) {
@@ -240,7 +242,7 @@ MOBenchmark = R6Class('MOBenchmark',
 
       # generate task powerset if specified
       if (self$gen_task_powerset && length(tasks) > 1) {
-        message('Creating task powerset...\n')
+        if (!self$quiet) message('Creating task powerset...\n')
         tasks = task_powerset(tasks)
       }
 
@@ -265,15 +267,19 @@ MOBenchmark = R6Class('MOBenchmark',
       )
       bench_num = nrow(bench_grid)
 
-      message('\nLearners: ', nrow(lrn_tbl))
-      message('Tasks: ', length(task_ids))
-      message('Benchmarks: ', bench_num)
+      if (!self$quiet) {
+        message('\nLearners: ', nrow(lrn_tbl))
+        message('Tasks: ', length(task_ids))
+        message('Benchmarks: ', bench_num)
+      }
 
       # execute benchmark
       result = list()
       for(row_id in 1:bench_num) {
-        message('\nBenchmark ', row_id, '/', bench_num)
-        message('#################')
+        if (!self$quiet) {
+          message('\nBenchmark ', row_id, '/', bench_num)
+          message('#################')
+        }
 
         task_id = bench_grid[row_id]$task_id
         lrn_id  = bench_grid[row_id]$lrn_id
@@ -293,7 +299,7 @@ MOBenchmark = R6Class('MOBenchmark',
         )
 
         # test learner
-        message('Bootstrap Testing')
+        if (!self$quiet) message('Bootstrap Testing')
         br = BootstrapResult$new(
           test_measure_ids = self$test_measure_ids,
           test_workers = test_workers,
@@ -347,7 +353,7 @@ MOBenchmark = R6Class('MOBenchmark',
 
       # If NULL `search_space` just train, no tuning required
       if (is.null(search_space)) {
-        message('Training: (', learner$id, ', ', task$id, ')')
+        if (!self$quiet) message('Training: (', learner$id, ', ', task$id, ')')
 
         tic()
         learner$train(task, row_ids = train_set)
@@ -377,7 +383,7 @@ MOBenchmark = R6Class('MOBenchmark',
       )
 
       # Train AutoTuner
-      message('Tuning: (', learner$id, ', ', task$id, ')')
+      if (!self$quiet) message('Tuning: (', learner$id, ', ', task$id, ')')
 
       tic()
       at$train(task, row_ids = train_set)
